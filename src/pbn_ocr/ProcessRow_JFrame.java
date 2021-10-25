@@ -7,6 +7,7 @@ package pbn_ocr;
 
 import java.awt.image.BufferedImage;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -24,6 +25,8 @@ public class ProcessRow_JFrame extends javax.swing.JFrame implements KeyListener
 private BufferedImage selImage;
 private ImageComponent ic;
 private Puzzle_JFrame puzzle_JFrame;
+private Point startPt;
+private Point endPt;
 private int num_cols_or_rows = 0;
 private int max_num_clues = 0;
 private int cur_index = 0;
@@ -36,10 +39,13 @@ private ArrayList<String> myClues;
 /**
  * Creates new form Puzzle_JFrame
  */
-public ProcessRow_JFrame(Puzzle_JFrame theFrame, String name) {	
+public ProcessRow_JFrame(Puzzle_JFrame theFrame, String name, Point start, Point end) {	
 
 //	bimage = img;	
 	puzzle_JFrame = theFrame;
+	
+	startPt = start;
+	endPt = end;
 	
 	// Initialize the image component with our first col or row to process
 	num_cols_or_rows = puzzle_JFrame.getNumColsOrRows();
@@ -53,7 +59,7 @@ public ProcessRow_JFrame(Puzzle_JFrame theFrame, String name) {
 	mySettings = new ProcessSettings (false, max_num_clues);
 	
 	// Grab the current col or row to process
-	BufferedImage bimage = puzzle_JFrame.getSelectionByIndex(cur_index);
+	BufferedImage bimage = puzzle_JFrame.getSelectionByIndex(cur_index, startPt, endPt, num_cols_or_rows, true);
 	
 	// Now *copy* it so we operate on a copy
 	selImage = cloneImage (bimage);
@@ -70,11 +76,29 @@ public ProcessRow_JFrame(Puzzle_JFrame theFrame, String name) {
 	ic = new ImageComponent (doctoredImage, null);	
 	initComponents();
 	
+	float pixels_per_clue = doctoredImage.getWidth() / max_num_clues;
+	int ipixels_per_clue = (int)Math.floor(pixels_per_clue);	
+	float startx = 0.f;
+	
 	// Process our first image and add output to the TextArea
 	String ocr_output = "";
 	try
 	{ 
-		ocr_output = tess.doOCR (doctoredImage);
+		if (ProcessLineJCheckBox.isSelected())
+		{
+			ocr_output = tess.doOCR (doctoredImage);
+			ocr_output = AddSpaces(ocr_output.trim());
+		} else
+		{
+			ocr_output = "";
+			for (int i=0; i<max_num_clues; i++)
+			{
+				BufferedImage clueImage = doctoredImage.getSubimage ((int)Math.floor(startx), 0, ipixels_per_clue, doctoredImage.getHeight());
+				startx += pixels_per_clue;
+				String ocr_out = tess.doOCR (clueImage);
+				ocr_output = ocr_output + " " + ocr_out;
+			}
+		}
 		ocr_output = ocr_output.trim();
 		myClues.set(cur_index, ocr_output);		
 	}
@@ -108,7 +132,7 @@ private void ProcessCurRow (boolean recycle)
 	if (!recycle)
 	{
 		// Grab the current col or row to process
-		BufferedImage bimage = puzzle_JFrame.getSelectionByIndex(cur_index);
+		BufferedImage bimage = puzzle_JFrame.getSelectionByIndex(cur_index, startPt, endPt, num_cols_or_rows, true);
 
 		// Now *copy* it so we operate on a copy
 		selImage = cloneImage (bimage);
@@ -120,13 +144,33 @@ private void ProcessCurRow (boolean recycle)
 	// Set up the new Image Component
 	ic.NotifyNewImage (doctoredImage);
 	
+	// Calculate # of columns per clue
+	float pixels_per_clue = doctoredImage.getWidth() / max_num_clues;
+	int ipixels_per_clue = (int)Math.floor(pixels_per_clue);	
+	float startx = 0.f;	
+	
 	// Process our first image and add output to the TextArea
 	String ocr_output = "";
 	if (myClues.get(cur_index) == null)
 	{	
 		try
-		{ 
-			ocr_output = tess.doOCR (doctoredImage);
+		{
+			if (ProcessLineJCheckBox.isSelected())
+			{
+				ocr_output = tess.doOCR (doctoredImage);
+				ocr_output = AddSpaces(ocr_output.trim());
+			} else
+			{
+				ocr_output = "";
+				for (int i=0; i<max_num_clues; i++)
+				{
+					BufferedImage clueImage = doctoredImage.getSubimage ((int)Math.floor(startx), 0, ipixels_per_clue, doctoredImage.getHeight());
+					startx += pixels_per_clue;
+					String ocr_out = tess.doOCR (clueImage);
+					if (ocr_out.length() > 0)
+						ocr_output = ocr_output + " " + ocr_out.trim();
+				}
+			}
 			ocr_output = ocr_output.trim();
 			myClues.set(cur_index, ocr_output);
 		}
@@ -136,6 +180,29 @@ private void ProcessCurRow (boolean recycle)
 		ocr_output = myClues.get(cur_index);
 	SetText(ocr_output);	
 	SetLabel (cur_index, num_cols_or_rows);	
+	
+	// Check if we've made it to the end and we have clues for all rows
+	if (cur_index == num_cols_or_rows-1 && WeHaveCluesForAllRows())
+	{
+		puzzle_JFrame.EnableReviewRows();
+	}
+}
+
+private boolean WeHaveCluesForAllRows()
+{
+	for (int i=0; i<num_cols_or_rows; i++)
+		if (myClues.get(i) == null || myClues.get(i).isEmpty()) return false;
+	return true;
+}
+
+private String AddSpaces (String str)
+{
+	String newStr = "";
+	for (int i=0; i<str.length(); i++)
+	{
+		newStr = newStr + str.substring(i,i+1) + " ";
+	}
+	return newStr.trim();
 }
 
 public static BufferedImage cloneImage (BufferedImage img)
@@ -208,6 +275,7 @@ public void keyTyped (KeyEvent ke)
         reportJLabel = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        ProcessLineJCheckBox = new javax.swing.JCheckBox();
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -302,6 +370,10 @@ public void keyTyped (KeyEvent ke)
             }
         });
 
+        ProcessLineJCheckBox.setSelected(true);
+        ProcessLineJCheckBox.setText("Process line as a whole");
+        ProcessLineJCheckBox.setToolTipText("Process line as one instead of by squares");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -334,7 +406,8 @@ public void keyTyped (KeyEvent ke)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jButton1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2)))
+                        .addComponent(jButton2))
+                    .addComponent(ProcessLineJCheckBox))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -364,7 +437,9 @@ public void keyTyped (KeyEvent ke)
                                 .addComponent(thinnerjButton)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(reportJLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 70, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 41, Short.MAX_VALUE)
+                        .addComponent(ProcessLineJCheckBox)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jButton1)
                             .addComponent(jButton2))
@@ -445,6 +520,7 @@ public void keyTyped (KeyEvent ke)
 		return nextText.trim();
 	}
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox ProcessLineJCheckBox;
     private javax.swing.JButton downJButton;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;

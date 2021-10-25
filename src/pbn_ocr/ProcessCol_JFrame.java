@@ -7,6 +7,7 @@ package pbn_ocr;
 
 import java.awt.image.BufferedImage;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.net.URL;
 import javax.sound.sampled.*;
@@ -25,6 +26,8 @@ public class ProcessCol_JFrame extends javax.swing.JFrame {
 private BufferedImage selImage;
 private ImageComponent ic;
 private Puzzle_JFrame puzzle_JFrame;
+private Point startPt;
+private Point endPt;
 private int num_cols_or_rows = 0;
 private int max_num_clues = 0;
 private int cur_index = 0;
@@ -38,10 +41,12 @@ private ArrayList<String> myClues;
  * Creates new form Puzzle_JFrame
  */
 //public ProcessCol_JFrame(BufferedImage img, String name) {
-public ProcessCol_JFrame(Puzzle_JFrame theFrame, String name) {	
+public ProcessCol_JFrame(Puzzle_JFrame theFrame, String name, Point start, Point end) {	
 
 //	bimage = img;	
 	puzzle_JFrame = theFrame;
+	startPt = start;
+	endPt = end;
 	
 	// Initialize the image component with our first col or row to process
 	num_cols_or_rows = puzzle_JFrame.getNumColsOrRows();
@@ -55,7 +60,7 @@ public ProcessCol_JFrame(Puzzle_JFrame theFrame, String name) {
 	mySettings = new ProcessSettings (true, max_num_clues);
 	
 	// Grab the current col or row to process
-	BufferedImage bimage = puzzle_JFrame.getSelectionByIndex(cur_index);
+	BufferedImage bimage = puzzle_JFrame.getSelectionByIndex(cur_index, startPt, endPt, num_cols_or_rows, false);
 	
 	// Now *copy* it so we operate on a copy
 	selImage = cloneImage (bimage);
@@ -108,7 +113,7 @@ private void ProcessCurColumn (boolean recycle)
 	if (!recycle)
 	{
 		// Grab the current col or row to process
-		BufferedImage bimage = puzzle_JFrame.getSelectionByIndex(cur_index);
+		BufferedImage bimage = puzzle_JFrame.getSelectionByIndex(cur_index, startPt, endPt, num_cols_or_rows, false);
 
 		// Now *copy* it so we operate on a copy
 		selImage = cloneImage (bimage);
@@ -138,6 +143,19 @@ private void ProcessCurColumn (boolean recycle)
 	
 	SetText(ocr_output);	
 	SetLabel (cur_index, num_cols_or_rows);	
+	
+	// Check if we've made it to the end and we have clues for all rows
+	if (cur_index == num_cols_or_rows-1 && WeHaveCluesForAllCols())
+	{
+		puzzle_JFrame.EnableReviewCols();
+	}	
+}
+
+private boolean WeHaveCluesForAllCols()
+{
+	for (int i=0; i<num_cols_or_rows; i++)
+		if (myClues.get(i) == null || myClues.get(i).isEmpty()) return false;
+	return true;
 }
 
 private String cleanUpExtraCRs (String text)

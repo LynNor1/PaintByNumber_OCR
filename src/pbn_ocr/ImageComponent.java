@@ -277,71 +277,48 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 		this.repaint();
 	}
 	
-	public BufferedImage GetSelectionByIndex (int index)
+	public Rectangle GetSelectionRectangle ()
+	{
+		int smallX = startPt.x < endPt.x ? startPt.x : endPt.x;
+		int smallY = startPt.y < endPt.y ? startPt.y : endPt.y;
+		int width = endPt.x - startPt.x;
+		int height = endPt.y - startPt.y;
+		if (width < 0) width = -width;
+		if (height < 0) height = -height;
+		Rectangle r = new Rectangle (smallX, smallY, width, height);
+		return r;
+	}
+	
+	public BufferedImage GetSelectionByIndex (int index, Point start, Point end, int num, boolean is_row)
 	{
 		int istart_x, istart_y, width, height;
 		// Draw rect around each column or row
-		if (puzzle_JFrame.IsColSelected())
+		if (!is_row)
 		{
-			int cols = endPt.x - startPt.x;
-			double pixels_per_col = (double)cols/(double)numColsOrRows;
+			int cols = end.x - start.x;
+			double pixels_per_col = (double)cols/(double)num;
 			width = (int)Math.floor(pixels_per_col);
-			height = endPt.y - startPt.y;
-			double start_x = startPt.x + (double)index*pixels_per_col;
+			height = end.y - start.y;
+			double start_x = start.x + (double)index*pixels_per_col;
 			istart_x = (int)Math.floor(start_x);
-			istart_y = startPt.y;
+			istart_y = start.y;
 			istart_x = istart_x + 2;
 			width = width - 2;
 		} else
 		{
-			int rows = endPt.y - startPt.y;
-			double pixels_per_row = (double)rows/(double)numColsOrRows;
+			int rows = end.y - start.y;
+			double pixels_per_row = (double)rows/(double)num;
 			height = (int)Math.floor(pixels_per_row);
-			width = endPt.x - startPt.x;
-			double start_y = startPt.y + (double)index*pixels_per_row;
+			width = end.x - start.x;
+			double start_y = start.y + (double)index*pixels_per_row;
 			istart_y = (int)Math.floor(start_y);
-			istart_x = startPt.x;
+			istart_x = start.x;
 			istart_y = istart_y + 2;
 			height = height - 2;
 		}
 		BufferedImage inputImg = this.image;
 		if (this.transformedImage != null) inputImg = this.transformedImage;
 		BufferedImage selImg = inputImg.getSubimage (istart_x, istart_y, width, height);
-		
-		/*
-		
-		// Clean up edges with white
-		Graphics g = selImg.getGraphics();
-		Graphics2D g2 = (Graphics2D)g;
-		g2.setColor(Color.WHITE);
-		g2.setStroke (new BasicStroke (1));
-		g2.drawRect (0, 0, width, height);
-		
-		// Clean up lines between clues
-		int maxNumClues = puzzle_JFrame.getMaxNumCluesPerColOrRow();
-		if (maxNumClues > 0)
-		{
-			if (puzzle_JFrame.IsColSelected())
-			{
-				float rows_per_clue = (float)height / (float)maxNumClues;
-				g2.setStroke (new BasicStroke (3));				
-				for (int c=0; c<maxNumClues; c++)
-				{
-					int iy = (int)Math.floor(c*rows_per_clue);
-					g2.drawLine(0, iy-1, width, iy-1);
-				}
-			} else
-			{				
-				float cols_per_clue = (float)width / (float)maxNumClues;
-				g2.setStroke (new BasicStroke (3));				
-				for (int c=0; c<maxNumClues; c++)
-				{
-					int ix = (int)Math.floor(c*cols_per_clue);
-					g2.drawLine(ix-1, 0, ix-1, height);
-				}
-			}
-		}
-		*/
 		
 		return selImg;
 	}

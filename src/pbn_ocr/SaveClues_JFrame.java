@@ -30,21 +30,46 @@ public SaveClues_JFrame(ArrayList<String> colClues, ArrayList<String> rowClues,
 {
 	myColClues = colClues;
 	myRowClues = rowClues;
+	int totalCol = GetTotal (myColClues);
+	int totalRow = GetTotal (myRowClues);
 	initComponents();
 	
 	if (myColClues == null)
 		numColsJLabel.setText ("No column clues");
 	else
-		numColsJLabel.setText ("Number columns: " + myColClues.size());
+		numColsJLabel.setText ("Number columns: " + myColClues.size() + " sum: " + totalCol);
 	
 	if (myRowClues == null)
 		numRowsJLabel.setText ("No row clues");
 	else
-		numRowsJLabel.setText ("Number rows: " + myRowClues.size());
+		numRowsJLabel.setText ("Number rows: " + myRowClues.size() + " sum: " + totalRow);
 	
 	sourceJTextField.setText(filename);
 	
 	setTitle ("Save Clues to File");
+}
+
+private int GetTotal (ArrayList<String> clues)
+{
+	if (clues == null) return 0;
+	int total = 0;
+	for (int i=0; i<clues.size(); i++)
+	{
+		String str = clues.get(i);
+		str = ReplaceCRs (str);
+		String strs[] = str.split(" ");
+		for (int j=0; j<strs.length; j++)
+		{
+			String s = strs[j];
+			try
+			{
+				int num = Integer.parseInt(s);
+				total += num;
+			} catch (NumberFormatException nfe)
+			{ }
+		}
+	}
+	return total;
 }
 
 /**
@@ -119,19 +144,18 @@ public SaveClues_JFrame(ArrayList<String> colClues, ArrayList<String> rowClues,
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(sourceJTextField))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(startColJTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(startRowJTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 112, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(startColJTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel5)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(startRowJTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(numColsJLabel)
                             .addComponent(numRowsJLabel))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 112, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -216,6 +240,13 @@ public SaveClues_JFrame(ArrayList<String> colClues, ArrayList<String> rowClues,
 		fd.setVisible(true);
 		if (fd.getFile() == null) return;
 		File f = new File(fd.getDirectory(), fd.getFile());
+		
+		// Add .pbn if not already at the end of the file name
+		if (!f.getName().endsWith (".pbn"))
+		{
+			File newF = new File (f.getParent(), f.getName() + ".pbn");
+			f = newF;
+		}
 		
 		if (WriteCluesToFile (f, myColClues, myRowClues, startCol, startRow))		
 			JOptionPane.showMessageDialog(this,

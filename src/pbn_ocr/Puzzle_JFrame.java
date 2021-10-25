@@ -11,6 +11,7 @@ import java.awt.image.BufferedImageOp;
 import java.awt.image.DataBufferByte;
 import java.awt.image.LookupOp;
 import java.awt.image.ByteLookupTable;
+import java.awt.Rectangle;
 import java.awt.Point;
 import java.util.ArrayList;
 import javax.swing.JFrame;
@@ -243,18 +244,31 @@ public boolean IsRowSelected ()
 	return (index == 1);
 }
 
-public BufferedImage getSelectionByIndex (int i)
+public BufferedImage getSelectionByIndex (int i, Point start, Point end, int num, boolean is_row)
 {
-	return ic.GetSelectionByIndex(i);
+	return ic.GetSelectionByIndex(i, start, end, num, is_row);
+}
+
+public void EnableReviewRows ()
+{
+	ReviewRowsJButton.setEnabled(true);
+}
+
+public void EnableReviewCols ()
+{
+	ReviewColsJButton.setEnabled(true);
 }
 
 private void ProcessSelection ()
 {
+	Rectangle d = this.ic.GetSelectionRectangle();
+	Point startPt = new Point (d.x, d.y);
+	Point endPt = new Point (d.x+d.width, d.y+d.height);
 	if (IsColSelected())
 	{
 		if (processcol_JFrame == null)
 		{
-			processcol_JFrame = new ProcessCol_JFrame (this, "Process Columns");
+			processcol_JFrame = new ProcessCol_JFrame (this, "Process Columns", startPt, endPt);
 			processcol_JFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		}
 		processcol_JFrame.setVisible(true);	
@@ -263,7 +277,7 @@ private void ProcessSelection ()
 	{
 		if (processrow_JFrame == null)
 		{
-			processrow_JFrame = new ProcessRow_JFrame (this, "Process Rows");
+			processrow_JFrame = new ProcessRow_JFrame (this, "Process Rows", startPt, endPt);
 			processrow_JFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		}
 		processrow_JFrame.setVisible(true);
@@ -295,6 +309,8 @@ private void ProcessSelection ()
         saveJButton = new javax.swing.JButton();
         undoRotateJButton = new javax.swing.JButton();
         manualJButton = new javax.swing.JButton();
+        ReviewRowsJButton = new javax.swing.JButton();
+        ReviewColsJButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -378,6 +394,22 @@ private void ProcessSelection ()
             }
         });
 
+        ReviewRowsJButton.setText("Review Rows...");
+        ReviewRowsJButton.setEnabled(false);
+        ReviewRowsJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ReviewRowsJButtonActionPerformed(evt);
+            }
+        });
+
+        ReviewColsJButton.setText("Review Cols...");
+        ReviewColsJButton.setEnabled(false);
+        ReviewColsJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ReviewColsJButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -403,7 +435,9 @@ private void ProcessSelection ()
                     .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jCheckBox1)
                     .addComponent(jButton2)
-                    .addComponent(saveJButton)))
+                    .addComponent(saveJButton)
+                    .addComponent(ReviewRowsJButton)
+                    .addComponent(ReviewColsJButton)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -434,7 +468,11 @@ private void ProcessSelection ()
                             .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButton2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ReviewRowsJButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ReviewColsJButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(saveJButton))
                     .addComponent(jScrollPane1))
                 .addContainerGap())
@@ -542,7 +580,17 @@ private void ProcessSelection ()
 		
     }//GEN-LAST:event_manualJButtonActionPerformed
 
+    private void ReviewRowsJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ReviewRowsJButtonActionPerformed
+		if (processrow_JFrame != null) processrow_JFrame.setVisible(true);
+    }//GEN-LAST:event_ReviewRowsJButtonActionPerformed
+
+    private void ReviewColsJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ReviewColsJButtonActionPerformed
+		if (processcol_JFrame != null) processcol_JFrame.setVisible(true);
+    }//GEN-LAST:event_ReviewColsJButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton ReviewColsJButton;
+    private javax.swing.JButton ReviewRowsJButton;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;

@@ -39,67 +39,71 @@ public class ClueReaderThread extends Thread implements LineListener {
 		audioQueue = new ArrayList();
 		for (int i=0; i<clues.length; i++)
 		{
-			Integer theNum = Integer.parseInt(clues[i]);
-			int hundreds_digit = 0;
-			int tens_digit = 0;
-			if (theNum == 0)
-				audioQueue.add(zero);
-			else if (theNum > 999)
+			try
 			{
-				// read each digit
-				for (int j=0; j<clues[i].length(); j++)
+				Integer theNum = Integer.parseInt(clues[i]);
+				int hundreds_digit = 0;
+				int tens_digit = 0;
+				if (theNum == 0)
+					audioQueue.add(zero);
+				else if (theNum > 999)
 				{
-					if (clues[i].charAt(j) == '0') audioQueue.add(zero);
-					else if (clues[i].charAt(j) == '1') audioQueue.add(one);
-					else if (clues[i].charAt(j) == '2') audioQueue.add(two);
-					else if (clues[i].charAt(j) == '3') audioQueue.add(three);
-					else if (clues[i].charAt(j) == '4') audioQueue.add(four);
-					else if (clues[i].charAt(j) == '5') audioQueue.add(five);
-					else if (clues[i].charAt(j) == '6') audioQueue.add(six);
-					else if (clues[i].charAt(j) == '7') audioQueue.add(seven);
-					else if (clues[i].charAt(j) == '8') audioQueue.add(eight);
-					else if (clues[i].charAt(j) == '9') audioQueue.add(nine);
-				}				
-			} else if (theNum > 99)
-			{
-				// get the hundred's digit
-				hundreds_digit = (int)Math.floor((float)theNum/100.0);
-				audioQueue.add(getURLForDigit(hundreds_digit));
-				audioQueue.add(hundred);
-				theNum = theNum - hundreds_digit*100;
-			}
-			if (theNum < 100)
-			{
-				tens_digit = (int)Math.floor((float)theNum/10.0);
-				if (tens_digit == 1)
+					// read each digit
+					for (int j=0; j<clues[i].length(); j++)
+					{
+						if (clues[i].charAt(j) == '0') audioQueue.add(zero);
+						else if (clues[i].charAt(j) == '1') audioQueue.add(one);
+						else if (clues[i].charAt(j) == '2') audioQueue.add(two);
+						else if (clues[i].charAt(j) == '3') audioQueue.add(three);
+						else if (clues[i].charAt(j) == '4') audioQueue.add(four);
+						else if (clues[i].charAt(j) == '5') audioQueue.add(five);
+						else if (clues[i].charAt(j) == '6') audioQueue.add(six);
+						else if (clues[i].charAt(j) == '7') audioQueue.add(seven);
+						else if (clues[i].charAt(j) == '8') audioQueue.add(eight);
+						else if (clues[i].charAt(j) == '9') audioQueue.add(nine);
+					}				
+				} else if (theNum > 99)
 				{
-					if (theNum == 10) audioQueue.add(ten);
-					else if (theNum == 11) audioQueue.add(eleven);
-					else if (theNum == 12) audioQueue.add(twelve);
-					else if (theNum == 13) audioQueue.add(thirteen);
-					else if (theNum == 14) audioQueue.add(fourteen);
-					else if (theNum == 15) audioQueue.add(fifteen);
-					else if (theNum == 16) audioQueue.add(sixteen);
-					else if (theNum == 17) audioQueue.add(seventeen);
-					else if (theNum == 18) audioQueue.add(eighteen);
-					else audioQueue.add(nineteen);
-					theNum = 0;
-				} else
-				{
-					if (tens_digit == 2) audioQueue.add(twenty);
-					else if (tens_digit == 3) audioQueue.add(thirty);
-					else if (tens_digit == 4) audioQueue.add(forty);
-					else if (tens_digit == 5) audioQueue.add(fifty);
-					else if (tens_digit == 6) audioQueue.add(sixty);
-					else if (tens_digit == 7) audioQueue.add(seventy);
-					else if (tens_digit == 8) audioQueue.add(eighty);
-					else if (tens_digit == 9) audioQueue.add(ninety);
-					theNum -= tens_digit*10;
+					// get the hundred's digit
+					hundreds_digit = (int)Math.floor((float)theNum/100.0);
+					audioQueue.add(getURLForDigit(hundreds_digit));
+					audioQueue.add(hundred);
+					theNum = theNum - hundreds_digit*100;
 				}
-			}
-			if (theNum > 0 && theNum < 10)
-				audioQueue.add(getURLForDigit(theNum));
-			audioQueue.add(pause);
+				if (theNum < 100)
+				{
+					tens_digit = (int)Math.floor((float)theNum/10.0);
+					if (tens_digit == 1)
+					{
+						if (theNum == 10) audioQueue.add(ten);
+						else if (theNum == 11) audioQueue.add(eleven);
+						else if (theNum == 12) audioQueue.add(twelve);
+						else if (theNum == 13) audioQueue.add(thirteen);
+						else if (theNum == 14) audioQueue.add(fourteen);
+						else if (theNum == 15) audioQueue.add(fifteen);
+						else if (theNum == 16) audioQueue.add(sixteen);
+						else if (theNum == 17) audioQueue.add(seventeen);
+						else if (theNum == 18) audioQueue.add(eighteen);
+						else audioQueue.add(nineteen);
+						theNum = 0;
+					} else
+					{
+						if (tens_digit == 2) audioQueue.add(twenty);
+						else if (tens_digit == 3) audioQueue.add(thirty);
+						else if (tens_digit == 4) audioQueue.add(forty);
+						else if (tens_digit == 5) audioQueue.add(fifty);
+						else if (tens_digit == 6) audioQueue.add(sixty);
+						else if (tens_digit == 7) audioQueue.add(seventy);
+						else if (tens_digit == 8) audioQueue.add(eighty);
+						else if (tens_digit == 9) audioQueue.add(ninety);
+						theNum -= tens_digit*10;
+					}
+				}
+				if (theNum > 0 && theNum < 10)
+					audioQueue.add(getURLForDigit(theNum));
+				audioQueue.add(pause);
+			} catch (NumberFormatException nfe)
+			{ }
 		}
 	}
 	
