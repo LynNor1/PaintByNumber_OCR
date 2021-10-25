@@ -13,7 +13,9 @@ Once you download the Tess4J package, you'll see the following folders:
 - tessdata (contains the English training data you need)
 - test
 
-The Tess4J folder is configured as a NetBeans project!  In NetBeans, you can load the Tess4J folder as a project.  Right-click on the project icon and select "Test..." to run the JUnit tests.  If your code is having trouble finding the native DLLs, you need to add -Dtest-sys-prop.java.library.path=lib/win32-x86-64 for the JUnit tests to run properly.  For your own code, you need to add -Djava.library.path=lib/win32-x86-64 to the "Run" "VM Options:" in the Project Properties.  (This is **NOT** working for me right now on my PC!)
+The Tess4J folder is configured as a NetBeans project!  In NetBeans, you can load the Tess4J folder as a project.  Right-click on the project icon and select "Test..." to run the JUnit tests.  If your code is having trouble finding the native DLLs, you need to add `-Dtest-sys-prop.java.library.path=lib/win32-x86-64` for the JUnit tests to run properly.  For your own code, you need to add `-Djava.library.path=lib/win32-x86-64` to the "Run" "VM Options:" in the Project Properties.  (This is **NOT** working for me right now on my PC!  And on my Mac, I didn't specify the library path at all! Eh?)
+
+In order for your code to find the Tesseract training data, also add `-DTESSDATA_PREFIX=/usr/local/Cellar/tesseract/4.1.1/share/tessdata` to your "Run" "VM Options:".  Obviously, you need to point to your particular tessdata folder.
 
 Here is a quick example of how to use Tesseract OCR in Java:
 
