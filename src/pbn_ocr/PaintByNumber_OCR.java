@@ -14,7 +14,6 @@ import java.awt.EventQueue;
 import java.awt.FileDialog;
 import java.awt.Graphics;
 import javax.swing.JFrame;
-import net.sourceforge.tess4j.*;
 import org.opencv.core.Core;
 /**
  *
@@ -71,7 +70,7 @@ public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable()
 		{
 			public void run(){
-				Puzzle_JFrame frame = new Puzzle_JFrame(img, name);
+				Puzzle_JFrame frame = new Puzzle_JFrame(img, name, f);
 				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				frame.setVisible(true);
 			}
@@ -81,17 +80,6 @@ public static void main(String[] args) {
     } catch (IOException e) {
         e.printStackTrace();
 	}
-}
-	
-private static int[] getPixelData(BufferedImage img, int x, int y) {
-	int argb = img.getRGB(x, y);
-	int rgb[] = new int[] {
-		(argb >> 16) & 0xff, //red
-		(argb >>  8) & 0xff, //green
-		(argb      ) & 0xff  //blue
-	};	
-	System.out.println("rgb: " + rgb[0] + " " + rgb[1] + " " + rgb[2]);
-	return rgb;
 }
 
 }

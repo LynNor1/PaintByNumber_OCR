@@ -25,7 +25,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jScrollPane1" pref="358" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" pref="418" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
@@ -33,23 +33,25 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jTextField2" max="32767" attributes="0"/>
                   </Group>
+                  <Component id="manualJButton" min="-2" max="-2" attributes="0"/>
+                  <Component id="ReloadJButton" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
+                  <Component id="undoRotateJButton" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
+                  <Component id="ContrastPlusJButton" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
+                  <Component id="jCheckBox1" min="-2" max="-2" attributes="0"/>
+                  <Component id="ProcessJButton" min="-2" max="-2" attributes="0"/>
+                  <Component id="saveJButton" min="-2" max="-2" attributes="0"/>
+                  <Component id="ReviewRowsJButton" min="-2" max="-2" attributes="0"/>
+                  <Component id="ReviewColsJButton" min="-2" max="-2" attributes="0"/>
+                  <Component id="MidPointJSlider" alignment="0" pref="0" max="32767" attributes="0"/>
+                  <Component id="BrightenJButton" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jTextField1" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="manualJButton" min="-2" max="-2" attributes="0"/>
-                  <Component id="jButton1" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
-                  <Component id="undoRotateJButton" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
-                  <Component id="jButton3" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
                   <Component id="jComboBox1" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
-                  <Component id="jButton4" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
-                  <Component id="jCheckBox1" min="-2" max="-2" attributes="0"/>
-                  <Component id="jButton2" min="-2" max="-2" attributes="0"/>
-                  <Component id="saveJButton" min="-2" max="-2" attributes="0"/>
-                  <Component id="ReviewRowsJButton" min="-2" max="-2" attributes="0"/>
-                  <Component id="ReviewColsJButton" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -59,15 +61,17 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="jButton1" min="-2" max="-2" attributes="0"/>
+                      <Component id="ReloadJButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="manualJButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="undoRotateJButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jButton3" min="-2" max="-2" attributes="0"/>
+                      <Component id="ContrastPlusJButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jButton4" min="-2" max="-2" attributes="0"/>
+                      <Component id="BrightenJButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="MidPointJSlider" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jCheckBox1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -83,7 +87,7 @@
                           <Component id="jTextField2" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jButton2" min="-2" max="-2" attributes="0"/>
+                      <Component id="ProcessJButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="ReviewRowsJButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -110,17 +114,19 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
     </Container>
-    <Component class="javax.swing.JButton" name="jButton1">
+    <Component class="javax.swing.JButton" name="ReloadJButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Auto Straighten"/>
+        <Property name="text" type="java.lang.String" value="Reload Image"/>
+        <Property name="toolTipText" type="java.lang.String" value="Reload image from file"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ReloadJButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JCheckBox" name="jCheckBox1">
       <Properties>
         <Property name="text" type="java.lang.String" value="Lock selection"/>
+        <Property name="toolTipText" type="java.lang.String" value="Select this when you have selected the clues to process (click and drag)"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCheckBox1ActionPerformed"/>
@@ -134,6 +140,7 @@
             <StringItem index="1" value="Row Clues"/>
           </StringArray>
         </Property>
+        <Property name="toolTipText" type="java.lang.String" value="Choose between processing column and row clues"/>
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
@@ -154,13 +161,14 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jTextField1ActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JButton" name="jButton2">
+    <Component class="javax.swing.JButton" name="ProcessJButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Process..."/>
+        <Property name="text" type="java.lang.String" value="OCR Process..."/>
+        <Property name="toolTipText" type="java.lang.String" value="Use OCR to extract clue values"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton2ActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ProcessJButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
@@ -171,29 +179,32 @@
     </Component>
     <Component class="javax.swing.JTextField" name="jTextField2">
       <Properties>
-        <Property name="text" type="java.lang.String" value="0"/>
-        <Property name="toolTipText" type="java.lang.String" value="0 implies no lines to remove between clues"/>
+        <Property name="text" type="java.lang.String" value="10"/>
+        <Property name="toolTipText" type="java.lang.String" value="Maximum # of clues per column or row"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="jButton3">
+    <Component class="javax.swing.JButton" name="ContrastPlusJButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Contrast+"/>
+        <Property name="toolTipText" type="java.lang.String" value="Brighten pixels above midpoint and darken those below"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton3ActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ContrastPlusJButtonActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JButton" name="jButton4">
+    <Component class="javax.swing.JButton" name="BrightenJButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Contrast-"/>
+        <Property name="text" type="java.lang.String" value="Brighten"/>
+        <Property name="toolTipText" type="java.lang.String" value="Brighten pixels above midpoint"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton4ActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="BrightenJButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JButton" name="saveJButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Save Clues..."/>
+        <Property name="toolTipText" type="java.lang.String" value="Save clues to .pbn file format"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveJButtonActionPerformed"/>
@@ -202,6 +213,7 @@
     <Component class="javax.swing.JButton" name="undoRotateJButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Undo Rotate"/>
+        <Property name="toolTipText" type="java.lang.String" value="Undo the applied rotation"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="undoRotateJButtonActionPerformed"/>
@@ -219,6 +231,7 @@
     <Component class="javax.swing.JButton" name="ReviewRowsJButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Review Rows..."/>
+        <Property name="toolTipText" type="java.lang.String" value="Review the row clues that you&apos;ve already processed"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
@@ -228,11 +241,19 @@
     <Component class="javax.swing.JButton" name="ReviewColsJButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Review Cols..."/>
+        <Property name="toolTipText" type="java.lang.String" value="Review the column clues that you&apos;ve already processed"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ReviewColsJButtonActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JSlider" name="MidPointJSlider">
+      <Properties>
+        <Property name="maximum" type="int" value="255"/>
+        <Property name="toolTipText" type="java.lang.String" value="Sets pixel value at midpoint between bright and dark"/>
+        <Property name="value" type="int" value="127"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

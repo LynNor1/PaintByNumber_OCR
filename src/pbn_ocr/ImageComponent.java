@@ -7,12 +7,12 @@ package pbn_ocr;
 
 import javax.swing.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.awt.Graphics;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Point;
 import java.awt.event.*;
-import java.awt.image.RescaleOp;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.Color;
@@ -28,7 +28,7 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
     private static final long serialVersionUID = 1L;
     private BufferedImage image = null;
 	private BufferedImage transformedImage = null;
-	private BufferedImage savedImage = null;
+//	private BufferedImage savedImage = null;
 	private int maxUnitIncrement = 1;
 	private float rotationDeg = 0.0f;
 	
@@ -43,8 +43,6 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 	
 	private Puzzle_JFrame puzzle_JFrame = null;
 	
-	private float scaleFactor = 1.0f;
-	private float offset = 0.0f;
 	private boolean isLine = false;	// If SHIFT key is down while click-and-drag, make a line instead of a rectangle!
 	
     public ImageComponent(BufferedImage img, Puzzle_JFrame myFrame){
@@ -146,7 +144,7 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 	
 	public void setTempImage (BufferedImage img)
 	{
-		savedImage = image;
+//		savedImage = image;
 		image = img;
 		transformedImage = null;
 		this.setSize (image.getWidth(), image.getHeight());
@@ -154,9 +152,10 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 			
 	}
 	
+	// This doesn't work because savedImage and image point to the same object.
 	public void restoreOldImage ()
 	{
-		image = savedImage;
+//		image = savedImage;
 		transformedImage = null;
 		this.setSize (image.getWidth(), image.getHeight());
 		this.setPreferredSize (new Dimension(image.getWidth(), image.getHeight()));		
@@ -176,34 +175,46 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 	
 	public void increaseContrast ()
 	{
-		scaleFactor += 0.1f;
-		if (scaleFactor > 2.0f) scaleFactor = 2.0f;
-		applyContrast();
+		applyContrast(true);
 	}
-	public void decreaseContrast ()
+	public void brighten ()
 	{
-		scaleFactor -= 0.1f;
-		if (scaleFactor < 0.1f) scaleFactor = 0.1f;
-		applyContrast();
-	}
+		applyContrast(false);
+	}	
 	
-	
-	private void applyContrast()
-	{
+	// if do_contrast, then brighten values > 127 and darken values < 127
+	// if !do_contrast, then brighten values > 127 only
+	private void applyContrast(boolean do_contrast)
+	{				
 		BufferedImage bimg = image;		
 		if (transformedImage != null)
 			bimg = transformedImage;
-
-		RescaleOp rescale = new RescaleOp (scaleFactor, offset, null);
-
-		BufferedImage bimgDest = new BufferedImage(bimg.getWidth(), bimg.getHeight(),
-			bimg.getType());
-		rescale.filter (bimg, bimgDest);
+		
+		int modification = 10;
+		
+		byte[] pixels = ((DataBufferByte) bimg.getRaster().getDataBuffer()).getData();	
+		
+		int mid_point = puzzle_JFrame.GetMidPoint();
+		
+		for (int i=0; i<pixels.length; i++)
+		{
+			int np = Byte.toUnsignedInt(pixels[i]);
+			if (np > mid_point)
+			{
+				np += modification;
+				if (np > 255) np = 255;
+			} else if (do_contrast)
+			{
+				np -= modification;
+				if (np < 0) np = 0;		
+			}
+			pixels[i] = (byte)np;
+		}
 		
 		if (transformedImage != null)
-			transformedImage = bimgDest;
+			transformedImage = bimg;
 		else
-			image = bimgDest;
+			image = bimg;		
 		
 		this.repaint();
 	}

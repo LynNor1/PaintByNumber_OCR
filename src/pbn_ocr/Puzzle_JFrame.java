@@ -5,21 +5,22 @@
  */
 package pbn_ocr;
 
-import java.awt.EventQueue;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.awt.image.BufferedImageOp;
 import java.awt.image.DataBufferByte;
-import java.awt.image.LookupOp;
-import java.awt.image.ByteLookupTable;
 import java.awt.Rectangle;
 import java.awt.Point;
 import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Core;
 import org.opencv.core.Rect;
+import static pbn_ocr.PaintByNumber_OCR.img;
 
 /**
  *
@@ -29,8 +30,9 @@ public class Puzzle_JFrame extends javax.swing.JFrame {
 
 private BufferedImage bimage;
 private ImageComponent ic;
-ProcessCol_JFrame processcol_JFrame = null;
-ProcessRow_JFrame processrow_JFrame = null;
+private ProcessCol_JFrame processcol_JFrame = null;
+private ProcessRow_JFrame processrow_JFrame = null;
+private File originalFile;
 
 private static final byte[] invertTable;
 
@@ -44,13 +46,38 @@ static {
 /**
  * Creates new form Puzzle_JFrame
  */
-public Puzzle_JFrame(BufferedImage img, String name) {
+public Puzzle_JFrame(BufferedImage img, String name, File f) {
 
+	originalFile = f;
 	bimage = img;	
 	ic = new ImageComponent (bimage, this);	
 	initComponents();
 	
 	setTitle (name);
+}
+
+private void ReloadOriginalFile ()
+{
+	try
+	{
+		// Read image
+		BufferedImage color_img = ImageIO.read(originalFile);
+		if (color_img == null) return;
+
+		// Convert to greyscale
+		BufferedImage greyImg = new BufferedImage(color_img.getWidth(), color_img.getHeight(),  
+			BufferedImage.TYPE_BYTE_GRAY);  
+		Graphics g = greyImg.getGraphics();  
+		g.drawImage(color_img, 0, 0, null);  
+		g.dispose();
+		
+		// update the ImageComponent with the new image
+		ic.NotifyNewImage (greyImg);
+		
+	} catch (IOException ie)
+	{
+		System.out.println ("IOException: " + ie.getLocalizedMessage());
+	}
 }
 
 private float AutoCalculateRotation ()
@@ -208,6 +235,7 @@ public int getNumColsOrRows ()
 		jTextField1.setSelectionStart(0);
 		jTextField1.setSelectionEnd(jTextField1.getText().length());
 	}
+	if (num < 0) num = 10;
 	return num;
 }
 
@@ -259,6 +287,11 @@ public void EnableReviewCols ()
 	ReviewColsJButton.setEnabled(true);
 }
 
+public int GetMidPoint ()
+{
+	return MidPointJSlider.getValue();
+}
+
 private void ProcessSelection ()
 {
 	Rectangle d = this.ic.GetSelectionRectangle();
@@ -296,35 +329,38 @@ private void ProcessSelection ()
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane(ic);
-        jButton1 = new javax.swing.JButton();
+        ReloadJButton = new javax.swing.JButton();
         jCheckBox1 = new javax.swing.JCheckBox();
         jComboBox1 = new javax.swing.JComboBox<>();
         jLabel1 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
-        jButton2 = new javax.swing.JButton();
+        ProcessJButton = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         jTextField2 = new javax.swing.JTextField();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
+        ContrastPlusJButton = new javax.swing.JButton();
+        BrightenJButton = new javax.swing.JButton();
         saveJButton = new javax.swing.JButton();
         undoRotateJButton = new javax.swing.JButton();
         manualJButton = new javax.swing.JButton();
         ReviewRowsJButton = new javax.swing.JButton();
         ReviewColsJButton = new javax.swing.JButton();
+        MidPointJSlider = new javax.swing.JSlider();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
-        jButton1.setText("Auto Straighten");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        ReloadJButton.setText("Reload Image");
+        ReloadJButton.setToolTipText("Reload image from file");
+        ReloadJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                ReloadJButtonActionPerformed(evt);
             }
         });
 
         jCheckBox1.setText("Lock selection");
+        jCheckBox1.setToolTipText("Select this when you have selected the clues to process (click and drag)");
         jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jCheckBox1ActionPerformed(evt);
@@ -332,6 +368,7 @@ private void ProcessSelection ()
         });
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Column Clues", "Row Clues" }));
+        jComboBox1.setToolTipText("Choose between processing column and row clues");
 
         jLabel1.setText("#");
         jLabel1.setToolTipText("# of columns or rows of clues");
@@ -344,35 +381,39 @@ private void ProcessSelection ()
             }
         });
 
-        jButton2.setText("Process...");
-        jButton2.setEnabled(false);
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        ProcessJButton.setText("OCR Process...");
+        ProcessJButton.setToolTipText("Use OCR to extract clue values");
+        ProcessJButton.setEnabled(false);
+        ProcessJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                ProcessJButtonActionPerformed(evt);
             }
         });
 
         jLabel2.setText("Max # Clues");
         jLabel2.setToolTipText("Max # of clues per col or row");
 
-        jTextField2.setText("0");
-        jTextField2.setToolTipText("0 implies no lines to remove between clues");
+        jTextField2.setText("10");
+        jTextField2.setToolTipText("Maximum # of clues per column or row");
 
-        jButton3.setText("Contrast+");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        ContrastPlusJButton.setText("Contrast+");
+        ContrastPlusJButton.setToolTipText("Brighten pixels above midpoint and darken those below");
+        ContrastPlusJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                ContrastPlusJButtonActionPerformed(evt);
             }
         });
 
-        jButton4.setText("Contrast-");
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
+        BrightenJButton.setText("Brighten");
+        BrightenJButton.setToolTipText("Brighten pixels above midpoint");
+        BrightenJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
+                BrightenJButtonActionPerformed(evt);
             }
         });
 
         saveJButton.setText("Save Clues...");
+        saveJButton.setToolTipText("Save clues to .pbn file format");
         saveJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveJButtonActionPerformed(evt);
@@ -380,6 +421,7 @@ private void ProcessSelection ()
         });
 
         undoRotateJButton.setText("Undo Rotate");
+        undoRotateJButton.setToolTipText("Undo the applied rotation");
         undoRotateJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 undoRotateJButtonActionPerformed(evt);
@@ -395,6 +437,7 @@ private void ProcessSelection ()
         });
 
         ReviewRowsJButton.setText("Review Rows...");
+        ReviewRowsJButton.setToolTipText("Review the row clues that you've already processed");
         ReviewRowsJButton.setEnabled(false);
         ReviewRowsJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -403,6 +446,7 @@ private void ProcessSelection ()
         });
 
         ReviewColsJButton.setText("Review Cols...");
+        ReviewColsJButton.setToolTipText("Review the column clues that you've already processed");
         ReviewColsJButton.setEnabled(false);
         ReviewColsJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -410,34 +454,40 @@ private void ProcessSelection ()
             }
         });
 
+        MidPointJSlider.setMaximum(255);
+        MidPointJSlider.setToolTipText("Sets pixel value at midpoint between bright and dark");
+        MidPointJSlider.setValue(127);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jTextField2))
+                    .addComponent(manualJButton)
+                    .addComponent(ReloadJButton, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(undoRotateJButton, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(ContrastPlusJButton, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jCheckBox1)
+                    .addComponent(ProcessJButton)
+                    .addComponent(saveJButton)
+                    .addComponent(ReviewRowsJButton)
+                    .addComponent(ReviewColsJButton)
+                    .addComponent(MidPointJSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(BrightenJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jTextField1))
-                    .addComponent(manualJButton)
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(undoRotateJButton, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jCheckBox1)
-                    .addComponent(jButton2)
-                    .addComponent(saveJButton)
-                    .addComponent(ReviewRowsJButton)
-                    .addComponent(ReviewColsJButton)))
+                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -445,15 +495,17 @@ private void ProcessSelection ()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1)
+                        .addComponent(ReloadJButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(manualJButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(undoRotateJButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton3)
+                        .addComponent(ContrastPlusJButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton4)
+                        .addComponent(BrightenJButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(MidPointJSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jCheckBox1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -467,7 +519,7 @@ private void ProcessSelection ()
                             .addComponent(jLabel2)
                             .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2)
+                        .addComponent(ProcessJButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(ReviewRowsJButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -481,15 +533,18 @@ private void ProcessSelection ()
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void ReloadJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ReloadJButtonActionPerformed
+/*
 		float newRotDeg = AutoCalculateRotation();
 		ic.setRotationDeg(newRotDeg);
 		ic.repaint();
-    }//GEN-LAST:event_jButton1ActionPerformed
+*/
+		ReloadOriginalFile();
+    }//GEN-LAST:event_ReloadJButtonActionPerformed
 
     private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
         ic.setLockSelection (jCheckBox1.isSelected());
-		jButton2.setEnabled(jCheckBox1.isSelected());
+		ProcessJButton.setEnabled(jCheckBox1.isSelected());
     }//GEN-LAST:event_jCheckBox1ActionPerformed
 
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
@@ -498,17 +553,17 @@ private void ProcessSelection ()
 			ic.NotifyNewNumColsOrRows (new_num);
     }//GEN-LAST:event_jTextField1ActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void ProcessJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ProcessJButtonActionPerformed
         ProcessSelection();
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_ProcessJButtonActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void ContrastPlusJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ContrastPlusJButtonActionPerformed
 	    ic.increaseContrast();
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }//GEN-LAST:event_ContrastPlusJButtonActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        ic.decreaseContrast();
-    }//GEN-LAST:event_jButton4ActionPerformed
+    private void BrightenJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BrightenJButtonActionPerformed
+        ic.brighten();
+    }//GEN-LAST:event_BrightenJButtonActionPerformed
 
     private void saveJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveJButtonActionPerformed
 
@@ -589,12 +644,13 @@ private void ProcessSelection ()
     }//GEN-LAST:event_ReviewColsJButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton BrightenJButton;
+    private javax.swing.JButton ContrastPlusJButton;
+    private javax.swing.JSlider MidPointJSlider;
+    private javax.swing.JButton ProcessJButton;
+    private javax.swing.JButton ReloadJButton;
     private javax.swing.JButton ReviewColsJButton;
     private javax.swing.JButton ReviewRowsJButton;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
