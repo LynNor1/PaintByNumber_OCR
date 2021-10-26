@@ -38,6 +38,8 @@ public class Tess4J_Example {
     
     public Tess4J_Example()
     {
+        final String[] formats = ShowImageIOInfo();        
+	    
         // ---- Have user select a TIFF image ----
         FileDialog fd = new FileDialog((java.awt.Frame) null, "Select a TIFF image for OCR", FileDialog.LOAD);
         fd.setFilenameFilter (new FilenameFilter ()
@@ -46,8 +48,8 @@ public class Tess4J_Example {
             {
                 String extension = name.substring(name.lastIndexOf("."));
                 if (extension == null) return false;
-                extension = extension.toLowerCase();
-                if (extension.compareTo (".tiff") == 0 || extension.compareTo (".tif") == 0) return true;
+                for (int i=0; i<formats.length; i++)
+                    if (extension.compareTo ("." + formats[i]) == 0) return true;
                 return false;
             }
         });
@@ -85,6 +87,20 @@ public class Tess4J_Example {
         { System.out.println ("TesseractException: " + tioe.getLocalizedMessage()); }
     }
     
+    public String[] ShowImageIOInfo () {
+        String[] formats = ImageIO.getReaderFormatNames();
+        for (int i = 0; i < formats.length; ++i) {
+          System.out.println("reader " + formats[i]);
+        }
+
+        String[] names = ImageIO.getWriterFormatNames();
+        for (int i = 0; i < names.length; ++i) {
+          System.out.println("writer " + names[i]);
+        }
+        
+        return formats;
+    }        
+    
     /*======================================*
     * Entry Point                          *
     *======================================*/
@@ -98,3 +114,32 @@ public class Tess4J_Example {
 
 # Installing OpenCV for Mac / Java
 Getting OpenCV installed on my Intel MacBook Pro was a little more difficult.  You can use homebrew to install OpenCV, but it no longer supports building the Java interfaces.  So I ended up installing OpenCV from source and building it locally on my machine.  I used instructions from here: [OpenCV 4 with Java instructions](https://delabassee.com/OpenCVJava/).
+
+I already had XCode and Java 8 installed on my Mac so I started with creating a landing space for OpenCV and downloading the source from GitHub:
+
+```
+mkdir workspace;cd workspace
+git clone https://github.com/opencv/opencv.git
+mkdir build
+```
+
+I think used ccmake to create the make file.
+
+```
+ccmake -S opencv/ -B build/
+```
+
+Following the directions, you hit "C" to scan the environment.  You can navigate through the various options, turning them on and off.  Then press "T" to enter Advanced Mode.  Advanced Mode was necessary to be able to configure some of the more obscure settings for Java.  Be sure to set the Java environment variables noted in the link.
+
+David Delabassée has a list of suggested modules to omit for a faster build and for just getting started.  I did try building the image codecs, but was not able to get it to actually build.  Because I'm relying on java.awt.ImageIO for reading image files, I did not need these codecs anyway.
+
+When you have finished setting up your options, press "G" to generate the Makefile.
+
+Once the Makefile is generated, you can build OpenCV using:
+
+```
+cmake --build build
+```
+
+Presumably all goes well and you now have OpenCV native libraries and the Java Native Interface to work with.  The .jar file should be in the build/bin folder and the native library files should be in build/lib.
+
