@@ -2,20 +2,18 @@
 Java program to scan a Nonogram .tiff and assist the user in extracting the puzzle clues using OCR.  This program was developed on an Intel 2016 MacBook Pro using Java 8 and NetBeans 8.2.
 
 # Installing Tesseract OCR for Mac / Java
-Tesseract OCR is used for extracting the puzzle clues from the scanned Nonogram.  I believe I downloaded it from SourceForge here: [SourceForge Tess4J download](https://sourceforge.net/projects/tess4j/) and do not recall having any issues getting my Java program to use it.  The download includes the native libraries needed for the Mac as well as the Java interface.
+Tesseract OCR is used for extracting the puzzle clues from the scanned Nonogram.  It seems that I have the native library installation via homebrew and the Java interface from Tess4J.  I believe I downloaded Tess4J from SourceForge here: [SourceForge Tess4J download](https://sourceforge.net/projects/tess4j/).
 
 Once you download the Tess4J package, you'll see the following folders:
 
 - dist (contains the .jar file you need)
-- lib (contains the binaries you need for your platform)
+- lib (contains the Windows .dlls you would need)
 - nbproject
 - src
-- tessdata (contains the English training data you need)
+- tessdata (contains the English training data you need, though I used the training data installed by homebrew)
 - test
 
-The Tess4J folder is configured as a NetBeans project!  In NetBeans, you can load the Tess4J folder as a project.  Right-click on the project icon and select "Test..." to run the JUnit tests.  If your code is having trouble finding the native DLLs, you need to add `-Dtest-sys-prop.java.library.path=lib/win32-x86-64` for the JUnit tests to run properly.  For your own code, you need to add `-Djava.library.path=lib/win32-x86-64` to the "Run" "VM Options:" in the Project Properties.  (This is **NOT** working for me right now on my PC!  And on my Mac, I didn't specify the library path at all! Eh?)
-
-In order for your code to find the Tesseract training data, also add `-DTESSDATA_PREFIX=/usr/local/Cellar/tesseract/4.1.1/share/tessdata` to your "Run" "VM Options:".  Obviously, you need to point to your particular tessdata folder.
+The Tess4J folder is configured as a NetBeans project!  In NetBeans, you can load the Tess4J folder as a project.  In theory, you should be able to run the JUnit tests by right-clicking on the project icon and select "Test...".  However, I could not get this to run on either my Mac or my PC, even when I added (for my PC) `-Dtest-sys-prop.java.library.path=lib/win32-x86-64` and `-Djava.library.path=lib/win32-x86-64` to the "Run" "VM Options:" in the Project Properties.  Somehow by using homebrew on my Mac, my system can automatically find the libtesseract.dylib without my needing to do anything else.  I'm not sure how to do the equivalent on my PC.
 
 Here is a quick example of how to use Tesseract OCR in Java:
 
@@ -72,7 +70,7 @@ public class Tess4J_Example {
 		
         // ---- Set up Tesseract and run the OCR ----
         Tesseract tess = new Tesseract();
-        tess.setDatapath("C:\\Users\\newbly\\OneDrive - General Atomics\\Documents\\Tess4J\\tessdata");	
+        tess.setDatapath("/usr/local/Cellar/tesseract/4.1.1/share/tessdata");	
         tess.setTessVariable("tessedit_char_whitelist", "0123456789");
         try
         {
