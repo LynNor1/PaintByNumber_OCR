@@ -13,7 +13,7 @@ Once you download the Tess4J package, you'll see the following folders:
 - tessdata (contains the English training data you need, though I used the training data installed by homebrew)
 - test
 
-The Tess4J folder is configured as a NetBeans project!  In NetBeans, you can load the Tess4J folder as a project.  In theory, you should be able to run the JUnit tests by right-clicking on the project icon and select "Test...".  However, I could not get this to run on either my Mac or my PC, even when I added (for my PC) `-Dtest-sys-prop.java.library.path=lib/win32-x86-64` and `-Djava.library.path=lib/win32-x86-64` to the "Run" "VM Options:" in the Project Properties.  Somehow by using homebrew on my Mac, my system can automatically find the libtesseract.dylib without my needing to do anything else.  I'm not sure how to do the equivalent on my PC.
+The Tess4J folder is configured as a NetBeans project!  In NetBeans, you can load the Tess4J folder as a project.  In theory, you should be able to run the JUnit tests by right-clicking on the project icon and select "Test...".  However, I could not get this to run on either my Mac or my PC, even when I added (for my PC) `-Dtest-sys-prop.java.library.path=lib/win32-x86-64` and `-Djava.library.path=lib/win32-x86-64` to the "Run" "VM Options:" in the Project Properties.  Somehow by using homebrew on my Mac, my system can automatically find the libtesseract.dylib without my needing to set the VM Options.  However, it cannot find the .dylib when I try to run the JUnit tests on my Mac.
 
 Here is a quick example of how to use Tesseract OCR in Java:
 
