@@ -113,7 +113,7 @@ public class Tess4J_Example {
 ```
 
 # Installing OpenCV for Mac / Java
-Getting OpenCV installed on my Intel MacBook Pro was a little more difficult.  You can use homebrew to install OpenCV, but it no longer supports building the Java interfaces.  So I ended up installing OpenCV from source and building it locally on my machine.  I used instructions from here: [OpenCV 4 with Java instructions](https://delabassee.com/OpenCVJava/).
+Getting OpenCV installed on my Intel MacBook Pro was a little more difficult.  You can use homebrew to install OpenCV, but it no longer supports building the Java interfaces.  So I ended up installing OpenCV from source and building it locally on my machine.  I used instructions from here: [OpenCV 4 with Java instructions](https://delabassee.com/OpenCVJava/) by David Delabassée.
 
 I already had XCode and Java 8 installed on my Mac so I started with creating a landing space for OpenCV and downloading the source from GitHub:
 
@@ -129,9 +129,9 @@ I think used ccmake to create the make file.
 ccmake -S opencv/ -B build/
 ```
 
-Following the directions, you hit "C" to scan the environment.  You can navigate through the various options, turning them on and off.  Then press "T" to enter Advanced Mode.  Advanced Mode was necessary to be able to configure some of the more obscure settings for Java.  Be sure to set the Java environment variables noted in the link.
+Following the directions, you hit "C" to scan the environment.  You can navigate through the various options, turning them on and off.  Then press "T" to enter Advanced Mode.  Advanced Mode was necessary to be able to configure some of the more obscure settings for Java.  Be sure to set the Java environment variables noted on the webpage.
 
-David Delabassée has a list of suggested modules to omit for a faster build and for just getting started.  I did try building the image codecs, but was not able to get it to actually build.  Because I'm relying on java.awt.ImageIO for reading image files, I did not need these codecs anyway.
+David Delabassée has a list of suggested modules to omit for a faster build and for just getting started.  I did try building the image codecs, but was not able to get it to actually build, having run into some kind of problem with needing/building gdal.  Because I'm relying on java.awt.ImageIO for reading image files, I did not need these codecs anyway.
 
 When you have finished setting up your options, press "G" to generate the Makefile.
 
@@ -143,3 +143,8 @@ cmake --build build
 
 Presumably all goes well and you now have OpenCV native libraries and the Java Native Interface to work with.  The .jar file should be in the build/bin folder and the native library files should be in build/lib.
 
+## OpenCV and NetBeans
+Now that OpenCV and it's Java bindings have been built, you need to add the `opencv-453.jar` library to the list of Libraries for the project.  And you add `-Djava.library.path=/Users/Lynne/Documents/OpenCV/build/lib` to the "Run" "VM Options:" Project Preferences.
+
+## OpenCV Example in Java / NetBeans
+The following code was used to compute the FFT of a greyscale image.
