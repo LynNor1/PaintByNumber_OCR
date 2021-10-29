@@ -1,7 +1,18 @@
 # PaintByNumber_OCR
 Java program to scan a Nonogram .tiff (or other format) and assist the user in extracting the puzzle clues using OCR.  This program was developed on an Intel 2016 MacBook Pro using Java 8 and NetBeans 8.2.
 
-# Installing Tesseract OCR for Mac / Java
+To find Java 8 JDKs for Mac and PC, click here [Java 8 Archive](https://www.oracle.com/java/technologies/javase/javase8u211-later-archive-downloads.html).  To find NetBeans 8.2 for PC, you can find it here [lucky link to NetBeans 8.2](https://softfamous.com/netbeans-ide/).  For the Mac, it may be possible to install older versions of NetBeans using homebrew:
+
+```
+brew tap homebrew/cask-versions
+brew search netbeans
+brew info --cask netbeansXX
+brew install --cask netbeansXX
+```
+
+where `netbeansXX` is the version you are looking to install.
+
+# Installing Tesseract OCR for Mac or PC with Java Interface
 Tesseract OCR is used for extracting the puzzle clues from the scanned Nonogram.  It seems that I have the native library installation via homebrew and the Java interface from Tess4J.  I believe I downloaded Tess4J from SourceForge here: [SourceForge Tess4J download](https://sourceforge.net/projects/tess4j/).  And my homebrew version is 4.1.0.  There are newer versions of Tesseract available now (v5) and I'm not sure if Tess4J will work with these newer versions.
 
 ## Tess4J and NetBeans
@@ -14,9 +25,9 @@ Once you download the Tess4J package, you'll see the following folders:
 - tessdata (contains the English training data you need, though I used the training data installed by homebrew)
 - test
 
-The Tess4J folder is configured as a NetBeans project.  In NetBeans, you can load the Tess4J folder as a project.  In theory, you should be able to run the JUnit tests by right-clicking on the project icon and select "Test...".  However, I could not get this to run on either my Mac or my PC, even when I added `-Dtest-sys-prop.java.library.path=lib/win32-x86-64` and `-Djava.library.path=lib/win32-x86-64` to the "Run" "VM Options:" in the Project Properties.  (Prior example is for the PC).  I also tried using the full path to the library folder and that also did not work.
+The Tess4J folder is configured as a NetBeans project.  In NetBeans, you can load the Tess4J folder as a project.  In theory, you should be able to run the JUnit tests by right-clicking on the project icon and select "Test...".  This worked flawlessly on my PC as long as I did not store the Tess4J folder on my OneDrive folder (which has spaces in the full path name).  I'm not sure if it was the spaces in the folder that mattered or if the fact that it was stored in the cloud that mattered.
 
-However on my Mac, I was able to get Tess4J and Tesseract to work without having to set up the java.library.path on the JVM command line.  Somehow by using homebrew on my Mac, my system can automatically find the libtesseract.dylib without my needing to set the VM Options.  However, it cannot find the .dylib when I try to run the JUnit tests on my Mac.  I may have to do something similar on my PC to get this to work (i.e. install Tesseract separately and set the system path to find it automatically).
+On my Mac, Tess4J does not contain the appropriate native libraries.  But I was able to install tesseract using homebrew.  So I am able to use the Java interfaces from Tess4J with the tesseract native libraries in homebrew without having to set up the java.library.path on the JVM command line.  (I'm probably also using a conveniently compatible version of tesseract).  I was not able to run the JUnit tests on my Mac for some reason because it could not find the native libraries. I have not pursued fixing this problem because my code was working.  
 
 ## Tesseract Example in Java / NetBeans
 Here is a quick example of how to use Tesseract OCR in Java.  You can create this sample program within the Tess4J Netbeans project and see if it will run.
@@ -112,8 +123,10 @@ public class Tess4J_Example {
 }
 ```
 
-# Installing OpenCV for Mac / Java
-Getting OpenCV installed on my Intel MacBook Pro was a little more difficult.  You can use homebrew to install OpenCV, but it no longer supports building the Java interfaces.  So I ended up installing OpenCV from source and building it locally on my machine.  I used instructions from here: [OpenCV 4 with Java instructions](https://delabassee.com/OpenCVJava/) by David Delabassée.
+# Installing OpenCV for Mac or PC with Java Interfaces
+On a PC, it is easy to get OpenCV with Java interfaces.  Click on this link [OpenCV Releases](https://opencv.org/releases/) to download the complete package for OpenCV.  The Java interfaces are contained within the build/java folder and the native libraries are in the build/java/x86 and build/java/x64 folders.
+
+Getting OpenCV installed on my Intel MacBook Pro was a little more difficult.  You can use homebrew to install OpenCV, but it no longer supports building the Java interfaces.  So I ended up trying to install OpenCV from source and building it locally on my machine.  I used instructions from here: [OpenCV 4 with Java instructions](https://delabassee.com/OpenCVJava/) by David Delabassée.
 
 I already had XCode and Java 8 installed on my Mac so I started with creating a landing space for OpenCV and downloading the source from GitHub:
 
@@ -129,9 +142,9 @@ I think used ccmake to create the make file.
 ccmake -S opencv/ -B build/
 ```
 
-Following the directions, navigate through the various options using the "j" and "k" keys for moving down and up through the options.  Options can be turned on and off by hitting the space bar or edited by hitting Enter.  Press "t" to enter Advanced Mode.  Advanced Mode was necessary to be able to configure some of the more obscure settings for Java.  Be sure to set the Java environment variables noted on the webpage.  After you have chosen your settings, type "c" to configure.
+Following the directions, navigate through the various options using the "j" and "k" keys (or your scroll wheel) for moving down and up through the options.  Options can be turned on and off by hitting the space bar or edited by hitting Enter.  Press "t" to enter Advanced Mode.  Advanced Mode was necessary to be able to configure some of the more obscure settings for Java.  Be sure to set the Java environment variables noted on the webpage.  After you have chosen your settings, type "c" to configure.
 
-David Delabassée has a list of suggested modules to omit for a faster build and for just getting started.  I did try building the image codecs, but was not able to get it to actually build, having run into some kind of problem with needing/building gdal.  Because I'm relying on java.awt.ImageIO for reading image files, I did not need these codecs anyway.
+David Delabassée has a list of suggested modules to omit for a faster build and for just getting started.  I did try building the image codecs and calib3d, but was not able to get it to actually build, having run into some kind of problem with building zlib.  If I use only the basics of OpenCV, I can get the whole thing to build.  But anything requiring zlib is a problem.  I have finished debugging this issue.
 
 When you have finished setting up your options, press "g" to generate the Makefile.
 
