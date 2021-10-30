@@ -31,6 +31,9 @@ public static void main(String[] args) {
 
     try {
 		
+		// Let's get the ImageIO formats we can read
+		final String[] formats = ShowImageIOInfo();
+		
 		// Let's try loading in openCV
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 		
@@ -42,12 +45,8 @@ public static void main(String[] args) {
 			{
 				String extension = name.substring(name.lastIndexOf("."));
 				if (extension == null) return false;
-				extension = extension.toLowerCase();
-				if (extension.compareTo (".tiff") == 0 ||
-					extension.compareTo (".tif") == 0 ||
-					extension.compareTo (".jpg")	== 0 ||
-					extension.compareTo (".jpeg") == 0 ||
-					extension.compareTo (".png") == 0) return true;
+                for (int i=0; i<formats.length; i++)
+                    if (extension.compareTo ("." + formats[i]) == 0) return true;
 				return false;
 			}
 		});
@@ -81,6 +80,20 @@ public static void main(String[] args) {
         e.printStackTrace();
 	}
 }
+
+   public static String[] ShowImageIOInfo () {
+        String[] formats = ImageIO.getReaderFormatNames();
+//        for (int i = 0; i < formats.length; ++i) {
+//          System.out.println("reader " + formats[i]);
+//        }
+
+//        String[] names = ImageIO.getWriterFormatNames();
+//        for (int i = 0; i < names.length; ++i) {
+//          System.out.println("writer " + names[i]);
+//        }
+        
+        return formats;
+    }        
 
 }
 
