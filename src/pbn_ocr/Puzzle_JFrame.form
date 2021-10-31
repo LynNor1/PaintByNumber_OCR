@@ -33,10 +33,9 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jTextField2" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="manualJButton" min="-2" max="-2" attributes="0"/>
-                  <Component id="ReloadJButton" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
-                  <Component id="undoRotateJButton" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
-                  <Component id="ContrastPlusJButton" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
+                  <Component id="ReloadJButton" alignment="0" max="32767" attributes="0"/>
+                  <Component id="undoRotateJButton" alignment="0" max="32767" attributes="0"/>
+                  <Component id="ContrastPlusJButton" alignment="0" max="32767" attributes="0"/>
                   <Component id="jCheckBox1" min="-2" max="-2" attributes="0"/>
                   <Component id="ProcessJButton" min="-2" max="-2" attributes="0"/>
                   <Component id="saveJButton" min="-2" max="-2" attributes="0"/>
@@ -49,7 +48,8 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jTextField1" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="jComboBox1" alignment="0" min="-2" pref="146" max="-2" attributes="0"/>
+                  <Component id="jComboBox1" alignment="0" max="32767" attributes="0"/>
+                  <Component id="manualJButton" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>

@@ -9,10 +9,7 @@ import java.awt.image.BufferedImage;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.net.URL;
-import javax.sound.sampled.*;
 import javax.swing.ImageIcon;
-import java.io.IOException;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
@@ -70,7 +67,7 @@ public ProcessCol_JFrame(Puzzle_JFrame theFrame, String name, Point start, Point
 	
 	// Set up Tesseract
 	tess = new Tesseract();
-	tess.setDatapath("/usr/local/Cellar/tesseract/4.1.1/share/tessdata");	
+	tess.setDatapath(PaintByNumber_OCR.TessDataPath);	
 	tess.setTessVariable("tessedit_char_whitelist", "0123456789");
 	
 	// Set up the new Image Component

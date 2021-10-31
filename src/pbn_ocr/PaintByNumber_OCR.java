@@ -15,6 +15,7 @@ import java.awt.FileDialog;
 import java.awt.Graphics;
 import javax.swing.JFrame;
 import org.opencv.core.Core;
+
 /**
  *
  * @author Lynne
@@ -24,12 +25,16 @@ public class PaintByNumber_OCR {
 	
     static BufferedImage img = null;
 	static String name = "unknown";
+	static String TessDataLocationDefault = "/usr/local/Cellar/tesseract/4.1.1/share/tessdata";
+	static String TessDataPath;
 /**
  * @param args the command line arguments
  */
 public static void main(String[] args) {
 
     try {
+		
+		TessDataPath = System.getProperty("tessdatapath", TessDataLocationDefault);
 		
 		// Let's get the ImageIO formats we can read
 		final String[] formats = ShowImageIOInfo();
