@@ -6,6 +6,7 @@
 package pbn_ocr;
 
 import javax.swing.*;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.Graphics;
@@ -16,6 +17,12 @@ import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.Color;
+import java.util.ArrayList;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.calib3d.Calib3d;
+import org.opencv.core.CvType;
+import org.opencv.imgproc.Imgproc;
 
 /**
  *
@@ -32,6 +39,8 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 	private int maxUnitIncrement = 1;
 	private float rotationDeg = 0.0f;
 	
+	private Mat homography = null;
+	
 	private boolean trackingRectangle = false;
 	private Point startPt = null;
 	private Point endPt = null;
@@ -40,6 +49,11 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 	private ClickAndDragThread selectRectThread = null;
 	private boolean lockSelection = false;
 	private int numColsOrRows = 0;
+	
+	private boolean trackingCorners = false;
+	private Point[] cornerPts = new Point[4];
+	private int cornersCollected = 0;
+	private Color cornersColor = Color.MAGENTA;
 	
 	private Puzzle_JFrame puzzle_JFrame = null;
 	
@@ -139,6 +153,13 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 				g.setColor (lineColor);
 				g.drawLine (startPt.x, startPt.y, endPt.x, endPt.y);
 			}
+		} else if (cornersCollected > 1)
+		{
+			g.setColor (cornersColor);
+			for (int i=0; i<cornersCollected-1; i++)
+				g.drawLine (cornerPts[i].x, cornerPts[i].y, cornerPts[i+1].x, cornerPts[i+1].y);
+			if (cornersCollected >= 4)
+				g.drawLine (cornerPts[3].x, cornerPts[3].y, cornerPts[0].x, cornerPts[0].y);
 		}
     }
 	
@@ -171,6 +192,51 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 	{
 		rotationDeg += incr_deg;
 		ApplyAllTransforms ();
+	}
+	
+	public void scaleImage (int scalePercent)
+	{
+		BufferedImage img = image;		
+		if (transformedImage != null)
+			img = transformedImage;
+		
+		int scaledWidth = img.getWidth() * scalePercent / 100;
+		int scaledHeight = (int) (img.getHeight() * ( (double) scaledWidth / img.getWidth() ));
+		
+		/* The following code does NOT work yet but is left in in case
+		// I want to add some restrictions of min and max sizes		
+		
+		int maxHeight = 2500;
+		int maxWidth = 2500;
+		int minHeight = 200;
+		int minWidth = 200;		
+
+		if (scaledHeight > maxHeight) {
+			scaledHeight = maxHeight;
+			scaledWidth= (int) (img.getWidth() * ( (double) scaledHeight/ img.getHeight() ));
+
+			if (scaledWidth > maxWidth) {
+				scaledWidth = maxWidth;
+				scaledHeight = maxHeight;
+			}
+		}
+		
+		if (scaledHeight < minHeight) {
+			scaledHeight = minHeight;
+			scaledWidth= (int) (img.getWidth() * ( (double) scaledHeight/ img.getHeight() ));
+
+			if (scaledWidth < minWidth) {
+				scaledWidth = minWidth;
+				scaledHeight = maxHeight;
+			}
+		}
+		*/
+		
+		Image resized =  img.getScaledInstance( scaledWidth, scaledHeight, BufferedImage.SCALE_AREA_AVERAGING);
+		BufferedImage buffered = new BufferedImage(scaledWidth, scaledHeight, img.getType());
+		buffered.getGraphics().drawImage(resized, 0, 0 , this);		
+		transformedImage = buffered;
+		
 	}
 	
 	public void increaseContrast ()
@@ -219,28 +285,116 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 		this.repaint();
 	}
 	
+	// input points are assumed to be *after* rotation applied
+	// output points are assumed to also be *after* rotation applied
+	public void setHomography (float rot_deg, Point[] inPts, Point[] outPts)
+	{
+		rotationDeg = rot_deg;
+		
+		ArrayList<org.opencv.core.Point> inPtsList = new ArrayList();
+		ArrayList<org.opencv.core.Point> outPtsList = new ArrayList();
+		double[] xy = new double[2];
+		for (int i=0; i<4; i++)
+		{
+			xy[0] = inPts[i].x;
+			xy[1] = inPts[i].y;
+			inPtsList.add(new org.opencv.core.Point(xy));
+//			System.out.println ("Input pt " + i + ") " + inPts[i].x + " " + inPts[i].y);
+		}
+//		System.out.println ("");
+		for (int i=0; i<4; i++)
+		{
+			xy[0] = outPts[i].x;
+			xy[1] = outPts[i].y;
+			outPtsList.add(new org.opencv.core.Point(xy));
+//			System.out.println ("Input pt " + i + ") " + outPts[i].x + " " + outPts[i].y);	
+		}
+		
+		MatOfPoint2f srcPts = new MatOfPoint2f();
+		srcPts.fromList(inPtsList);
+		MatOfPoint2f destPts = new MatOfPoint2f();
+		destPts.fromList(outPtsList);
+		homography = Calib3d.findHomography (srcPts, destPts);
+				
+		// now convert the outPts to a startPt and endPt for a rectangular selection
+		// area (and we're going to rely on the fact that the input points were
+		// sorted from smallest to biggest X)
+		Point sPt = outPts[0];
+		Point ePt = outPts[2];
+		if (outPts[0].y > outPts[1].y)
+		{
+			sPt = outPts[1];
+			ePt = outPts[3];
+		}
+		this.resetCornerCount();
+		this.setStartPt (sPt, false);
+		this.setEndPt (ePt);		
+		
+		ApplyAllTransforms();
+		
+	}
+	
 	private void ApplyAllTransforms()
 	{
+		BufferedImage startImage = image;
+		if (transformedImage != null) startImage = transformedImage;
+		
 		if (rotationDeg == 0.0f)
 		{
-			transformedImage = null;
+			// do nothing
 		} else
 		{
 			// Apply rotation
 			double rads = Math.toRadians(rotationDeg);
 			double sin = Math.abs(Math.sin(rads));
 			double cos = Math.abs(Math.cos(rads));
-			int w = (int) Math.floor(image.getWidth() * cos + image.getHeight() * sin);
-			int h = (int) Math.floor(image.getHeight() * cos + image.getWidth() * sin);
-			transformedImage = new BufferedImage(w, h, image.getType());
+			int w = (int) Math.floor(startImage.getWidth() * cos + startImage.getHeight() * sin);
+			int h = (int) Math.floor(startImage.getHeight() * cos + startImage.getWidth() * sin);
+			transformedImage = new BufferedImage(w, h, startImage.getType());
 			AffineTransform at = new AffineTransform();
 			at.translate(w / 2, h / 2);
 			at.rotate(rads,0, 0);
-			at.translate(-image.getWidth() / 2, -image.getHeight() / 2);
+			at.translate(-startImage.getWidth() / 2, -startImage.getHeight() / 2);
 			AffineTransformOp rotateOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-			rotateOp.filter(image,transformedImage);			
+			rotateOp.filter(startImage,transformedImage);
+			
+			startImage = transformedImage;
+		}
+		
+		// Apply homography
+		if (homography != null)
+		{
+			
+			byte[] pixels = ((DataBufferByte) startImage.getRaster().getDataBuffer()).getData();
+			Mat inputMat = new Mat(startImage.getHeight(), startImage.getWidth(), CvType.CV_8UC1);
+			inputMat.put (0, 0, pixels);	
+			
+			Mat outputMat = new Mat();
+			Imgproc.warpPerspective(inputMat, outputMat, homography, inputMat.size());			
+			
+			// Create an empty image in matching format
+			BufferedImage warpedImage = new BufferedImage(outputMat.width(), outputMat.height(), BufferedImage.TYPE_BYTE_GRAY);
+
+			// Get the BufferedImage's backing array and copy the pixels directly into it
+			byte[] data = ((DataBufferByte) warpedImage.getRaster().getDataBuffer()).getData();
+			outputMat.get(0, 0, data);	
+			
+			transformedImage = warpedImage;
 		}
 	}
+	
+	public void setCornerPt (Point p, int which)
+	{
+		if (which > 3) return;
+		cornerPts[which] = p;
+		cornersCollected = which+1;
+	}
+	public void resetCornerCount ()
+	{ cornersCollected = 0; }
+	public int getCornersCollected ()
+	{ return cornersCollected; }
+	public Point[] getCorners ()
+	{ return cornerPts; }
 	
 	public void setTrackingRectangle (boolean b)
 	{ trackingRectangle = b; }

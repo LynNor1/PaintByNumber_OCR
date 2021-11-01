@@ -25,7 +25,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jScrollPane1" pref="418" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" pref="484" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
@@ -50,6 +50,9 @@
                   </Group>
                   <Component id="jComboBox1" alignment="0" max="32767" attributes="0"/>
                   <Component id="manualJButton" alignment="0" max="32767" attributes="0"/>
+                  <Component id="HomographyJButton" max="32767" attributes="0"/>
+                  <Component id="ScaleJButton" max="32767" attributes="0"/>
+                  <Component id="ScaleJSlider" pref="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
@@ -67,11 +70,17 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="undoRotateJButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
+                      <Component id="HomographyJButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="ContrastPlusJButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="BrightenJButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="MidPointJSlider" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="ScaleJButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="ScaleJSlider" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jCheckBox1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -250,9 +259,40 @@
     </Component>
     <Component class="javax.swing.JSlider" name="MidPointJSlider">
       <Properties>
-        <Property name="maximum" type="int" value="255"/>
+        <Property name="majorTickSpacing" type="int" value="64"/>
+        <Property name="maximum" type="int" value="256"/>
+        <Property name="paintLabels" type="boolean" value="true"/>
+        <Property name="paintTicks" type="boolean" value="true"/>
         <Property name="toolTipText" type="java.lang.String" value="Sets pixel value at midpoint between bright and dark"/>
         <Property name="value" type="int" value="127"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="HomographyJButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Homography Txfm"/>
+        <Property name="toolTipText" type="java.lang.String" value="CTRL-click and drag the two sides of a polygon you need to straighten"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="HomographyJButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="ScaleJButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Scale Size"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ScaleJButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JSlider" name="ScaleJSlider">
+      <Properties>
+        <Property name="majorTickSpacing" type="int" value="50"/>
+        <Property name="maximum" type="int" value="200"/>
+        <Property name="minimum" type="int" value="50"/>
+        <Property name="paintLabels" type="boolean" value="true"/>
+        <Property name="paintTicks" type="boolean" value="true"/>
+        <Property name="toolTipText" type="java.lang.String" value="Size scaling to apply (percentage)"/>
+        <Property name="value" type="int" value="100"/>
       </Properties>
     </Component>
   </SubComponents>

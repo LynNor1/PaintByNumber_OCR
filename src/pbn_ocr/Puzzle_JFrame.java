@@ -11,6 +11,7 @@ import java.awt.image.DataBufferByte;
 import java.awt.Rectangle;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import java.io.File;
@@ -19,7 +20,6 @@ import javax.imageio.ImageIO;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Core;
-import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Rect;
 
 /**
@@ -345,6 +345,9 @@ private void ProcessSelection ()
         ReviewRowsJButton = new javax.swing.JButton();
         ReviewColsJButton = new javax.swing.JButton();
         MidPointJSlider = new javax.swing.JSlider();
+        HomographyJButton = new javax.swing.JButton();
+        ScaleJButton = new javax.swing.JButton();
+        ScaleJSlider = new javax.swing.JSlider();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -454,9 +457,35 @@ private void ProcessSelection ()
             }
         });
 
-        MidPointJSlider.setMaximum(255);
+        MidPointJSlider.setMajorTickSpacing(64);
+        MidPointJSlider.setMaximum(256);
+        MidPointJSlider.setPaintLabels(true);
+        MidPointJSlider.setPaintTicks(true);
         MidPointJSlider.setToolTipText("Sets pixel value at midpoint between bright and dark");
         MidPointJSlider.setValue(127);
+
+        HomographyJButton.setText("Homography Txfm");
+        HomographyJButton.setToolTipText("CTRL-click and drag the two sides of a polygon you need to straighten");
+        HomographyJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                HomographyJButtonActionPerformed(evt);
+            }
+        });
+
+        ScaleJButton.setText("Scale Size");
+        ScaleJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ScaleJButtonActionPerformed(evt);
+            }
+        });
+
+        ScaleJSlider.setMajorTickSpacing(50);
+        ScaleJSlider.setMaximum(200);
+        ScaleJSlider.setMinimum(50);
+        ScaleJSlider.setPaintLabels(true);
+        ScaleJSlider.setPaintTicks(true);
+        ScaleJSlider.setToolTipText("Size scaling to apply (percentage)");
+        ScaleJSlider.setValue(100);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -464,7 +493,7 @@ private void ProcessSelection ()
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
@@ -486,7 +515,10 @@ private void ProcessSelection ()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jTextField1))
                     .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(manualJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(manualJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(HomographyJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(ScaleJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(ScaleJSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -501,11 +533,17 @@ private void ProcessSelection ()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(undoRotateJButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(HomographyJButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(ContrastPlusJButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(BrightenJButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(MidPointJSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ScaleJButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ScaleJSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jCheckBox1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -643,14 +681,163 @@ private void ProcessSelection ()
 		if (processcol_JFrame != null) processcol_JFrame.setVisible(true);
     }//GEN-LAST:event_ReviewColsJButtonActionPerformed
 
+    private void HomographyJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_HomographyJButtonActionPerformed
+		if (ic.getCornersCollected() != 4)
+		{
+			JOptionPane.showMessageDialog(this, 
+				"Select 4 corners of an area that needs to be straighted out (hold CTRL while clicking)", 
+				"Select Four Corners", JOptionPane.OK_OPTION);
+			return;			
+		} else
+		{
+			Point[] corners = ic.getCorners();
+			
+			// Let's calculate an overall rotation based on perceived left edge
+			
+			// Sort points by .x value from lowest to highest
+			LinkedList<Point> cornerListSortByX = new LinkedList();
+			cornerListSortByX.add(corners[0]);
+			for (int i=1; i<4; i++)
+			{
+				Point corner = corners[i];
+				boolean is_added = false;
+				for (Point pt : cornerListSortByX)
+				{
+					int idx = cornerListSortByX.indexOf(pt);
+					if (corner.x < pt.x)
+					{
+						cornerListSortByX.add(idx, corner);
+						is_added = true;
+						break;
+					}
+				}
+				if (!is_added) cornerListSortByX.add(corner);
+			}
+			
+			Point startPt;
+			Point endPt;
+			if (cornerListSortByX.get(0).y < cornerListSortByX.get(1).y)
+			{
+				startPt = cornerListSortByX.get(0);
+				endPt = cornerListSortByX.get(1);
+			} else
+			{
+				startPt = cornerListSortByX.get(1);
+				endPt = cornerListSortByX.get(0);
+			}
+			
+			double rotAngRad1 = Math.asin((double)(endPt.x - startPt.x)/(double)(endPt.y - startPt.y));
+
+			if (cornerListSortByX.get(2).y < cornerListSortByX.get(3).y)
+			{
+				startPt = cornerListSortByX.get(2);
+				endPt = cornerListSortByX.get(3);
+			} else
+			{
+				startPt = cornerListSortByX.get(3);
+				endPt = cornerListSortByX.get(2);
+			}		
+			double rotAngRad2 = Math.asin((double)(endPt.x - startPt.x)/(double)(endPt.y - startPt.y));
+			
+			double rotAngRad = (rotAngRad1 + rotAngRad2)/2.0;
+			double rotAngDeg = rotAngRad*180.0/Math.PI;
+			
+			
+			System.out.println ("Averaged rotation angle is: " + rotAngDeg + " (deg)");		
+			
+			// Now rotate all four corners
+			Point[] rotCornersSortByX = new Point[4];
+			for (int i=0; i<4; i++)
+			{
+				Point corner = cornerListSortByX.get(i);
+				double newX = corner.x*Math.cos(-rotAngRad) + corner.y*Math.sin(-rotAngRad);
+				double newY = corner.y*Math.cos(-rotAngRad) - corner .x*Math.sin(-rotAngRad);
+				rotCornersSortByX[i] = new Point((int)Math.round(newX), (int)Math.round(newY));
+//				System.out.println ("Input corner: " + corner.x + " " + corner.y);
+//				System.out.println ("  Rotated   : " + rotCornersSortByX[i].x + " " + rotCornersSortByX[i].y);
+			}
+			
+			// Now calculate the smaller and bigger y values
+			double smallX = (cornerListSortByX.get(0).x + cornerListSortByX.get(1).x)/2.0;
+			double bigX   = (cornerListSortByX.get(2).x + cornerListSortByX.get(3).x)/2.0;			
+			
+			// Now sort corners by y
+			LinkedList<Point> rotCornerListSortByY = new LinkedList();
+			rotCornerListSortByY.add(rotCornersSortByX[0]);
+			for (int i=1; i<4; i++)
+			{
+				Point corner = rotCornersSortByX[i];
+				boolean is_added = false;
+				for (Point pt : rotCornerListSortByY)
+				{
+					int idx = rotCornerListSortByY.indexOf(pt);
+					if (corner.y < pt.y)
+					{
+						rotCornerListSortByY.add(idx, corner);
+						is_added = true;
+						break;
+					}
+				}
+				if (!is_added) rotCornerListSortByY.add(corner);
+			}
+
+			// Now calculate the smaller and bigger y values
+			double smallY = (rotCornerListSortByY.get(0).y + rotCornerListSortByY.get(1).y)/2.0;
+			double bigY   = (rotCornerListSortByY.get(2).y + rotCornerListSortByY.get(3).y)/2.0;
+			
+			// Establish new corners for the homography transformation
+			// based on the rotated list sorted by x
+			Point[] outCorners = new Point[4];
+			
+			// small x - point 0
+			double x = smallX;
+			double y = smallY;
+			if (rotCornersSortByX[0].y > rotCornersSortByX[1].y)
+				y = bigY;
+			outCorners[0] = new Point ((int)Math.round(x), (int)Math.round(y));
+			
+			// small x - point 1
+			y = smallY;
+			if (rotCornersSortByX[1].y > rotCornersSortByX[0].y)
+				y = bigY;			
+			outCorners[1] = new Point ((int)Math.round(x), (int)Math.round(y));
+			
+			// big x - point 2
+			x = bigX;
+			y = smallY;
+			if (rotCornersSortByX[2].y > rotCornersSortByX[3].y)
+				y = bigY;
+			outCorners[2] = new Point ((int)Math.round(x), (int)Math.round(y));
+			
+			// big x - point 3
+			x = bigX;
+			y = smallY;
+			if (rotCornersSortByX[3].y > rotCornersSortByX[2].y)
+				y = bigY;
+			outCorners[3] = new Point ((int)Math.round(x), (int)Math.round(y));			
+			
+			ic.setHomography((float)rotAngDeg, rotCornersSortByX, outCorners);
+			ic.repaint();			
+		}
+    }//GEN-LAST:event_HomographyJButtonActionPerformed
+
+    private void ScaleJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ScaleJButtonActionPerformed
+		int scalePercent = ScaleJSlider.getValue();
+		ic.scaleImage (scalePercent);
+		ic.repaint();
+    }//GEN-LAST:event_ScaleJButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BrightenJButton;
     private javax.swing.JButton ContrastPlusJButton;
+    private javax.swing.JButton HomographyJButton;
     private javax.swing.JSlider MidPointJSlider;
     private javax.swing.JButton ProcessJButton;
     private javax.swing.JButton ReloadJButton;
     private javax.swing.JButton ReviewColsJButton;
     private javax.swing.JButton ReviewRowsJButton;
+    private javax.swing.JButton ScaleJButton;
+    private javax.swing.JSlider ScaleJSlider;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
