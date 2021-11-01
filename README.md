@@ -162,4 +162,6 @@ Presumably all goes well and you now have OpenCV native libraries and the Java N
 Now that OpenCV and it's Java bindings have been built, you need to add the `opencv-453.jar` library to the list of Libraries for the project.  And you add `-Djava.library.path=/Users/Lynne/Documents/OpenCV/build/lib` to the "Run" "VM Options:" Project Preferences.
 
 ## OpenCV Example in Java / NetBeans
-The following code was used to compute the FFT of a greyscale image.
+There are two examples of using OpenCV in this program.  One is not used, but is in `Puzzle_JFrame.java` and is the `AutoCalculateRotation` method.  It computes an FFT.
+
+The other example is of calculating and applying a homography transform.  The setup for the data needed for the homography transform is in `Puzzle_JFrame.java` in the `HomographyJButtonActionPerformed` method.  The actual computation of the transform is in the `ImageComponent.setHomography` method.  The application of the transform occurs in the `ImageComponent.ApplyAllTransforms` method.  A good reference for how to do the homography transform was found [here](https://docs.opencv.org/4.5.3/d9/dab/tutorial_homography.html).
