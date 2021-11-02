@@ -383,6 +383,12 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 		}
 	}
 	
+	public BufferedImage getCurrentImage ()
+	{
+		if (transformedImage != null) return transformedImage;
+		else return image;
+	}
+	
 	public void setCornerPt (Point p, int which)
 	{
 		if (which > 3) return;

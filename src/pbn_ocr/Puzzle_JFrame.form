@@ -270,7 +270,7 @@
     <Component class="javax.swing.JButton" name="HomographyJButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Homography Txfm"/>
-        <Property name="toolTipText" type="java.lang.String" value="CTRL-click and drag the two sides of a polygon you need to straighten"/>
+        <Property name="toolTipText" type="java.lang.String" value="CTRL-click the 4 corners of the polygon you need to straighten"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="HomographyJButtonActionPerformed"/>

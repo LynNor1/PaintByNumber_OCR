@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.Rectangle;
 import java.awt.Point;
+import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import javax.swing.JFrame;
@@ -465,7 +466,7 @@ private void ProcessSelection ()
         MidPointJSlider.setValue(127);
 
         HomographyJButton.setText("Homography Txfm");
-        HomographyJButton.setToolTipText("CTRL-click and drag the two sides of a polygon you need to straighten");
+        HomographyJButton.setToolTipText("CTRL-click the 4 corners of the polygon you need to straighten");
         HomographyJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 HomographyJButtonActionPerformed(evt);
@@ -740,18 +741,30 @@ private void ProcessSelection ()
 			double rotAngRad2 = Math.asin((double)(endPt.x - startPt.x)/(double)(endPt.y - startPt.y));
 			
 			double rotAngRad = (rotAngRad1 + rotAngRad2)/2.0;
-			double rotAngDeg = rotAngRad*180.0/Math.PI;
+			double rotAngDeg = rotAngRad*180.0/Math.PI;			
 			
+			System.out.println ("Averaged rotation angle is: " + rotAngDeg + " (deg)");	
 			
-			System.out.println ("Averaged rotation angle is: " + rotAngDeg + " (deg)");		
+			// Calculate width of rotated image
+			double cos = Math.cos(-rotAngRad);
+			double sin = Math.sin(-rotAngRad);
+			BufferedImage startImage = ic.getCurrentImage();
+			int w = (int) Math.floor(startImage.getWidth() * cos + startImage.getHeight() * sin);
+			int h = (int) Math.floor(startImage.getHeight() * cos + startImage.getWidth() * sin);
+			int start_w = startImage.getWidth();
+			int start_h = startImage.getHeight();		
 			
 			// Now rotate all four corners
 			Point[] rotCornersSortByX = new Point[4];
 			for (int i=0; i<4; i++)
 			{
 				Point corner = cornerListSortByX.get(i);
-				double newX = corner.x*Math.cos(-rotAngRad) + corner.y*Math.sin(-rotAngRad);
-				double newY = corner.y*Math.cos(-rotAngRad) - corner .x*Math.sin(-rotAngRad);
+				double startX = corner.x - start_w/2.0;
+				double startY = corner.y - start_h/2.0;
+				double newX = startX*Math.cos(-rotAngRad) + startY*Math.sin(-rotAngRad);
+				double newY = startY*Math.cos(-rotAngRad) - startX*Math.sin(-rotAngRad);
+				newX += w/2.0;
+				newY += h/2.0;
 				rotCornersSortByX[i] = new Point((int)Math.round(newX), (int)Math.round(newY));
 //				System.out.println ("Input corner: " + corner.x + " " + corner.y);
 //				System.out.println ("  Rotated   : " + rotCornersSortByX[i].x + " " + rotCornersSortByX[i].y);

@@ -31,6 +31,7 @@ public class ClickAndDragThread extends Thread implements MouseListener, MouseMo
 	{
 		ic.resetCornerCount ();
 		collectingCorners = false;
+		cornerCount = 0;
 //		System.out.println ("collecting corners reset");
 	}
 	private void resetClickAndDrag ()
@@ -51,24 +52,21 @@ public class ClickAndDragThread extends Thread implements MouseListener, MouseMo
 	// MouseListener methods
 	public void mouseClicked(MouseEvent me)
 	{
-		/*
 		if (ic.isLockSelected()) return;
 		isShift = (me.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) == MouseEvent.SHIFT_DOWN_MASK;
 		isCtrl = (me.getModifiersEx() & MouseEvent.CTRL_DOWN_MASK) == MouseEvent.CTRL_DOWN_MASK;		
 		if (isCtrl && !isShift)
 		{
-			if (cornerCount == 0) resetClickAndDrag();
+			if (!collectingCorners) resetClickAndDrag();
 			if (cornerCount < 4)
 			{
 				ic.setCornerPt (me.getPoint(), cornerCount);
 				ic.repaint();
 				cornerCount++;
 				collectingCorners = true;
-//				System.out.println ("Added corner # " + cornerCount);
 				if (cornerCount == 4) collectingCorners = false;
 			}		
 		}
-		*/
 	}
 	public void mouseEntered(MouseEvent me)
 	{ }
@@ -87,8 +85,8 @@ public class ClickAndDragThread extends Thread implements MouseListener, MouseMo
 			ic.setStartPt (me.getPoint(), isShift);
 			ic.repaint();
 			clickAndDrag = true;
-		} else
-		{
+		} else {
+			/*
 			if (!collectingCorners) 
 			{
 				resetClickAndDrag();
@@ -98,6 +96,7 @@ public class ClickAndDragThread extends Thread implements MouseListener, MouseMo
 			cornerCount++;
 			ic.repaint();
 			collectingCorners = true;
+			*/
 		}
 	}
 	public void mouseReleased(MouseEvent me)
@@ -109,13 +108,16 @@ public class ClickAndDragThread extends Thread implements MouseListener, MouseMo
 			ic.setTrackingRectangle (false);
 			ic.repaint();	
 			clickAndDrag = false;
-		} else if (collectingCorners)
+		}
+		/*
+		else if (collectingCorners)
 		{
 			ic.setCornerPt (me.getPoint(), cornerCount);
 			cornerCount++;
 			ic.repaint();
 			if (cornerCount == 4) collectingCorners = false;
 		}
+		*/
 	}	
 
 	// MouseMotionListener method
@@ -126,7 +128,8 @@ public class ClickAndDragThread extends Thread implements MouseListener, MouseMo
 		{
 			ic.setEndPt (e.getPoint());
 			ic.repaint();
-		} else if (collectingCorners)
+		}
+		else if (collectingCorners)
 		{
 //			System.out.println ("Updating corner " + (cornerCount+1));
 			ic.setCornerPt (e.getPoint(), cornerCount);			
@@ -141,11 +144,14 @@ public class ClickAndDragThread extends Thread implements MouseListener, MouseMo
 		{
 			ic.setEndPt (e.getPoint());
 			ic.repaint();
-		} else if (collectingCorners)
+		}
+		/*
+		else if (collectingCorners)
 		{
 			ic.setCornerPt(e.getPoint(), cornerCount);
 			ic.repaint();
 		}
+		*/
 		ic.scrollRectToVisible(r);
     }
 	
