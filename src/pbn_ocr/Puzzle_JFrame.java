@@ -262,6 +262,9 @@ public int getMaxNumCluesPerColOrRow ()
 	return num;
 }
 
+public ImageComponent GetImageComponent()
+{ return ic; }
+
 public boolean IsColSelected ()
 {
 	int index = this.jComboBox1.getSelectedIndex();
@@ -277,6 +280,10 @@ public BufferedImage getSelectionByIndex (int i, Point start, Point end, int num
 {
 	return ic.GetSelectionByIndex(i, start, end, num, is_row);
 }
+public Point GetStartPt ()
+{ return ic.getStartPt(); }
+public Point GetEndPt ()
+{ return ic.getEndPt(); }
 
 public void EnableReviewRows ()
 {

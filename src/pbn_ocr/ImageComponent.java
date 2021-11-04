@@ -49,6 +49,8 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 	private ClickAndDragThread selectRectThread = null;
 	private boolean lockSelection = false;
 	private int numColsOrRows = 0;
+	private Point selectedCluesStart = null;
+	private Point selectedCluesEnd = null;
 	
 	private boolean trackingCorners = false;
 	private Point[] cornerPts = new Point[4];
@@ -115,16 +117,19 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 			if (!isLine)
 			{
 				g.setColor (rectColor);
+				int num_clues = puzzle_JFrame.getMaxNumCluesPerColOrRow();
 				if (lockSelection && numColsOrRows > 0 && puzzle_JFrame != null)
 				{
 					// rearrange Start/End pts so UL/LR
 					RearrangeStartEndPts ();
 
 					// Draw rect around each column or row
+					int cols = endPt.x - startPt.x;
+					int rows = endPt.y - startPt.y;					
 					if (puzzle_JFrame.IsColSelected())
 					{
-						int cols = endPt.x - startPt.x;
 						double pixels_per_col = (double)cols/(double)numColsOrRows;
+						double pixels_per_clue = (double)rows/(double)num_clues;
 						int width = (int)Math.floor(pixels_per_col);
 						int height = endPt.y - startPt.y;
 						for (int n=0; n<numColsOrRows; n++)
@@ -133,10 +138,16 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 							int istart_x = (int)Math.floor(start_x);
 							g.drawRect(istart_x, startPt.y, width, height);
 						}
+						for (int n=0; n<num_clues; n++)
+						{
+							double start_y = startPt.y + (double)n*pixels_per_clue;
+							int istart_y = (int)Math.floor(start_y);
+							g.drawLine (startPt.x, istart_y, endPt.x, istart_y);
+						}
 					} else
 					{
-						int rows = endPt.y - startPt.y;
 						double pixels_per_row = (double)rows/(double)numColsOrRows;
+						double pixels_per_clue = (double)cols/(double)num_clues;
 						int height = (int)Math.floor(pixels_per_row);
 						int width = endPt.x - startPt.x;
 						for (int n=0; n<numColsOrRows; n++)
@@ -145,6 +156,19 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 							int istart_y = (int)Math.floor(start_y);
 							g.drawRect(startPt.x, istart_y, width, height);
 						}
+						for (int n=0; n<num_clues; n++)
+						{
+							double start_x = startPt.x + (double)n*pixels_per_clue;
+							int istart_x = (int)Math.floor(start_x);
+							g.drawLine (istart_x, startPt.y, istart_x, endPt.y);
+						}						
+					}
+					if (selectedCluesStart != null && selectedCluesEnd != null)
+					{
+						int width  = selectedCluesEnd.x - selectedCluesStart.x;
+						int height = selectedCluesEnd.y - selectedCluesStart.y;
+						g.setColor (Color.CYAN);
+						g.drawRect (selectedCluesStart.x, selectedCluesStart.y-1, width, height+1);
 					}
 				} else
 					g.drawRect (startPt.x, startPt.y, endPt.x-startPt.x, endPt.y-startPt.y);
@@ -320,11 +344,17 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 		// area (and we're going to rely on the fact that the input points were
 		// sorted from smallest to biggest X)
 		Point sPt = outPts[0];
-		Point ePt = outPts[2];
-		if (outPts[0].y > outPts[1].y)
+		int iopposite = 2;
+		if (Math.abs(sPt.y - outPts[iopposite].y) < 10)
+			iopposite = 3;
+		Point ePt = outPts[iopposite];
+		if (sPt.y > ePt.y)
 		{
 			sPt = outPts[1];
-			ePt = outPts[3];
+			iopposite = 3;
+			if (Math.abs(sPt.y - outPts[iopposite].y) < 10)
+				iopposite = 2;
+			ePt = outPts[iopposite];
 		}
 		this.resetCornerCount();
 		this.setStartPt (sPt, false);
@@ -431,7 +461,12 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 	
 	public void setLockSelection (boolean b)
 	{ 
-		lockSelection = b; 
+		lockSelection = b;
+		if (!lockSelection)
+		{
+			selectedCluesStart = null;
+			selectedCluesEnd = null;
+		}
 		if (lockSelection && puzzle_JFrame != null)
 		{
 			int num = puzzle_JFrame.getNumColsOrRows();
@@ -441,6 +476,41 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 	}
 	public boolean isLockSelected ()
 	{ return lockSelection; }
+	
+	public void MoveSelectionUp ()
+	{
+		int step = 1;
+		startPt.y -= step;
+		endPt.y -= step;
+		selectedCluesStart.y -= step;
+		selectedCluesEnd.y -= step;
+	}
+	
+	public void MoveSelectionDown ()
+	{
+		int step = 1;
+		startPt.y += step;
+		endPt.y += step;
+		selectedCluesStart.y += step;
+		selectedCluesEnd.y += step;
+	}
+	public void MoveSelectionLeft ()
+	{
+		int step = 1;
+		startPt.x -= step;
+		endPt.x -= step;
+		selectedCluesStart.x -= step;
+		selectedCluesEnd.x -= step;
+	}
+	
+	public void MoveSelectionRight ()
+	{
+		int step = 1;
+		startPt.x += step;
+		endPt.x += step;
+		selectedCluesStart.x += step;
+		selectedCluesEnd.x += step;
+	}
 	
 	public void NotifyNewNumColsOrRows (int new_num)
 	{ 
@@ -490,6 +560,9 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 		BufferedImage inputImg = this.image;
 		if (this.transformedImage != null) inputImg = this.transformedImage;
 		BufferedImage selImg = inputImg.getSubimage (istart_x, istart_y, width, height);
+		selectedCluesStart = new Point (istart_x, istart_y);
+		selectedCluesEnd   = new Point (istart_x + width, istart_y + height);
+		this.repaint();
 		
 		return selImg;
 	}
