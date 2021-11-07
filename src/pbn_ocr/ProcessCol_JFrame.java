@@ -38,7 +38,8 @@ private ArrayList<String> myClues;
  * Creates new form Puzzle_JFrame
  */
 //public ProcessCol_JFrame(BufferedImage img, String name) {
-public ProcessCol_JFrame(Puzzle_JFrame theFrame, String name, Point start, Point end) {	
+public ProcessCol_JFrame(Puzzle_JFrame theFrame, String name, Point start, Point end,
+		ArrayList<String> startingClues) {	
 
 //	bimage = img;	
 	puzzle_JFrame = theFrame;
@@ -50,8 +51,12 @@ public ProcessCol_JFrame(Puzzle_JFrame theFrame, String name, Point start, Point
 	max_num_clues = puzzle_JFrame.getMaxNumCluesPerColOrRow();
 	
 	// Initialize the ArrayList with empty strings
-	myClues = new ArrayList<String>(num_cols_or_rows);
-	for (int i=0; i<num_cols_or_rows; i++) myClues.add(null);
+	if (startingClues == null)
+	{
+		myClues = new ArrayList<String>(num_cols_or_rows);
+		for (int i=0; i<num_cols_or_rows; i++) myClues.add(null);
+	} else
+		myClues = startingClues;
 	
 	// Set up new Settings
 	mySettings = new ProcessSettings (true, max_num_clues);
@@ -75,30 +80,41 @@ public ProcessCol_JFrame(Puzzle_JFrame theFrame, String name, Point start, Point
 	initComponents();
 	
 	// Process our first image and add output to the TextArea
-	String ocr_output = "";
-	try
-	{ 
-		ocr_output = tess.doOCR (doctoredImage);
-		ocr_output = cleanUpExtraCRs (ocr_output);
-		myClues.set(cur_index, ocr_output);
-	}
-	catch (TesseractException te)
-	{ ocr_output = te.getLocalizedMessage(); }
-	SetText(ocr_output);	
+	if (startingClues == null)
+	{
+		String ocr_output = "";
+		try
+		{ 
+			ocr_output = tess.doOCR (doctoredImage);
+			ocr_output = cleanUpExtraCRs (ocr_output);
+			myClues.set(cur_index, ocr_output);
+		}
+		catch (TesseractException te)
+		{ ocr_output = te.getLocalizedMessage(); }
+		SetText(ocr_output);
+	} else
+		SetText (myClues.get(0));
 	SetLabel (cur_index, num_cols_or_rows);
 		
 	setTitle (name);
+	
+	if (startingClues != null)
+		puzzle_JFrame.EnableReviewCols();	
 }
 
-public void ResetSettings ()
+public void ResetSettings (ArrayList<String> pbnClues)
 {
 	// Initialize the image component with our first col or row to process
 	num_cols_or_rows = puzzle_JFrame.getNumColsOrRows();
 	max_num_clues = puzzle_JFrame.getMaxNumCluesPerColOrRow();
 	cur_index = 0;
 	// Initialize the ArrayList with empty strings
-	myClues = new ArrayList<String>(num_cols_or_rows);
-	for (int i=0; i<num_cols_or_rows; i++) myClues.add(null);	
+	if (pbnClues == null)
+	{
+		myClues = new ArrayList<String>(num_cols_or_rows);
+		for (int i=0; i<num_cols_or_rows; i++) myClues.add(null);
+	} else
+		myClues = pbnClues;
 	ProcessCurColumn (false);
 }
 
@@ -243,6 +259,8 @@ public void SetLabel (int cur_index, int num)
         ImageIcon iconThicker = new ImageIcon ("images/thicker.png");
         thickerjButton = new javax.swing.JButton(iconThicker);
         jButton7 = new javax.swing.JButton();
+        NudgeUpJButton = new javax.swing.JButton(icon);
+        NudgeDownJButton = new javax.swing.JButton(iconDown);
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -257,11 +275,11 @@ public void SetLabel (int cur_index, int num)
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
         jTextArea1.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                jTextArea1KeyTyped(evt);
-            }
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 jTextArea1KeyReleased(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                jTextArea1KeyTyped(evt);
             }
         });
         jScrollPane2.setViewportView(jTextArea1);
@@ -369,6 +387,22 @@ public void SetLabel (int cur_index, int num)
             }
         });
 
+        NudgeUpJButton.setText("Up");
+        NudgeUpJButton.setToolTipText("Nudge selection box up");
+        NudgeUpJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                NudgeUpJButtonActionPerformed(evt);
+            }
+        });
+
+        NudgeDownJButton.setText("Down");
+        NudgeDownJButton.setToolTipText("Nudge selection box down");
+        NudgeDownJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                NudgeDownJButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -376,17 +410,6 @@ public void SetLabel (int cur_index, int num)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(NudgeLeftJButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(NudgeRightJButton)
-                                .addGap(0, 3, Short.MAX_VALUE))
-                            .addComponent(reportJLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
@@ -408,8 +431,22 @@ public void SetLabel (int cur_index, int num)
                                 .addComponent(jButton1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jButton2)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(reportJLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(NudgeUpJButton)
+                                    .addComponent(NudgeLeftJButton))
+                                .addGap(1, 1, 1)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(NudgeRightJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(NudgeDownJButton))))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -435,13 +472,21 @@ public void SetLabel (int cur_index, int num)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(jLabel1)
-                    .addComponent(NudgeLeftJButton)
-                    .addComponent(NudgeRightJButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(NudgeUpJButton)
+                    .addComponent(NudgeDownJButton))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 56, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButton1)
+                            .addComponent(jButton2))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(NudgeLeftJButton)
+                            .addComponent(NudgeRightJButton))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton7)
                     .addComponent(jButton8))
@@ -454,9 +499,9 @@ public void SetLabel (int cur_index, int num)
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 194, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 88, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -466,9 +511,9 @@ public void SetLabel (int cur_index, int num)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2))
+                    .addComponent(jScrollPane1)
+                    .addComponent(jScrollPane2)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -526,13 +571,17 @@ public void SetLabel (int cur_index, int num)
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jTextArea1KeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextArea1KeyTyped
-
+        // save any changes to the clues
+		String newText = jTextArea1.getText();
+		myClues.set(cur_index, newText);
+//		System.out.println ("text area key typed: " + newText);
     }//GEN-LAST:event_jTextArea1KeyTyped
 
     private void jTextArea1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextArea1KeyReleased
         // save any changes to the clues
 		String newText = jTextArea1.getText();
 		myClues.set(cur_index, newText);
+//		System.out.println ("text area key released: " + newText);	
     }//GEN-LAST:event_jTextArea1KeyReleased
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
@@ -556,9 +605,27 @@ public void SetLabel (int cur_index, int num)
 		ProcessCurColumn(false);
     }//GEN-LAST:event_NudgeRightJButtonActionPerformed
 
+    private void NudgeUpJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NudgeUpJButtonActionPerformed
+        puzzle_JFrame.GetImageComponent().MoveSelectionUp();
+		ic.repaint();
+		startPt = puzzle_JFrame.GetStartPt();
+		endPt   = puzzle_JFrame.GetEndPt();
+		ProcessCurColumn(false);
+    }//GEN-LAST:event_NudgeUpJButtonActionPerformed
+
+    private void NudgeDownJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NudgeDownJButtonActionPerformed
+        puzzle_JFrame.GetImageComponent().MoveSelectionDown();
+		ic.repaint();
+		startPt = puzzle_JFrame.GetStartPt();
+		endPt   = puzzle_JFrame.GetEndPt();
+		ProcessCurColumn(false);        // TODO add your handling code here:
+    }//GEN-LAST:event_NudgeDownJButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton NudgeDownJButton;
     private javax.swing.JButton NudgeLeftJButton;
     private javax.swing.JButton NudgeRightJButton;
+    private javax.swing.JButton NudgeUpJButton;
     private javax.swing.JButton downJButton;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;

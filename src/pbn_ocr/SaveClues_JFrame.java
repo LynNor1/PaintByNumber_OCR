@@ -248,9 +248,11 @@ private int GetTotal (ArrayList<String> clues)
 			f = newF;
 		}
 		
-		if (WriteCluesToFile (f, myColClues, myRowClues, startCol, startRow))		
-			JOptionPane.showMessageDialog(this,
-					"File written!", "Save Clues", JOptionPane.OK_OPTION);
+		if (WriteCluesToFile (f, myColClues, myRowClues, startCol, startRow))	
+		{
+			JOptionPane.showMessageDialog(null, "File written!");
+			this.dispose();
+		}
     }//GEN-LAST:event_jButton1ActionPerformed
 
 	private boolean WriteCluesToFile (File f, ArrayList<String> colClues,
@@ -308,7 +310,7 @@ private int GetTotal (ArrayList<String> clues)
 		return num;
 	}
 	
-	private static String ReplaceCRs (String str)
+	public static String ReplaceCRs (String str)
 	{
 		String[] tokens = str.split("\n");
 		String new_str = "";

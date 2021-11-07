@@ -5,23 +5,26 @@
  */
 package pbn_ocr;
 
+import java.awt.FileDialog;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.Rectangle;
 import java.awt.Point;
-import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Core;
 import org.opencv.core.Rect;
+import paintbynumberpro.PBNPuzzle;
+import paintbynumberpro.PuzzleStaticUtilities;
 
 /**
  *
@@ -34,6 +37,11 @@ private ImageComponent ic;
 private ProcessCol_JFrame processcol_JFrame = null;
 private ProcessRow_JFrame processrow_JFrame = null;
 private File originalFile;
+private File pbnFile = null;
+private PBNPuzzle myPuzzle = null;
+private GrabCluesFromPBNJFrame myGrabCluesFromPBNJFrame = null;
+private int start_col_clue_from_PBN = -1;
+private int start_row_clue_from_PBN = -1;
 
 private static final byte[] invertTable;
 
@@ -300,7 +308,7 @@ public int GetMidPoint ()
 	return MidPointJSlider.getValue();
 }
 
-private void ProcessSelection ()
+private void ProcessSelection (ArrayList<String> pbnClues)
 {
 	Rectangle d = this.ic.GetSelectionRectangle();
 	Point startPt = new Point (d.x, d.y);
@@ -309,20 +317,20 @@ private void ProcessSelection ()
 	{
 		if (processcol_JFrame == null)
 		{
-			processcol_JFrame = new ProcessCol_JFrame (this, "Process Columns", startPt, endPt);
+			processcol_JFrame = new ProcessCol_JFrame (this, "Process Columns", startPt, endPt, pbnClues);
 			processcol_JFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		}
 		processcol_JFrame.setVisible(true);	
-		processcol_JFrame.ResetSettings();
+		processcol_JFrame.ResetSettings(pbnClues);
 	} else
 	{
 		if (processrow_JFrame == null)
 		{
-			processrow_JFrame = new ProcessRow_JFrame (this, "Process Rows", startPt, endPt);
+			processrow_JFrame = new ProcessRow_JFrame (this, "Process Rows", startPt, endPt, pbnClues);
 			processrow_JFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		}
 		processrow_JFrame.setVisible(true);
-		processrow_JFrame.ResetSettings();
+		processrow_JFrame.ResetSettings(pbnClues);
 	}
 	
 }
@@ -337,91 +345,35 @@ private void ProcessSelection ()
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane(ic);
-        ReloadJButton = new javax.swing.JButton();
-        jCheckBox1 = new javax.swing.JCheckBox();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jLabel1 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        ProcessJButton = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
-        ContrastPlusJButton = new javax.swing.JButton();
-        BrightenJButton = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
         saveJButton = new javax.swing.JButton();
-        undoRotateJButton = new javax.swing.JButton();
+        SavePBNJButton = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
+        BrightenJButton = new javax.swing.JButton();
         manualJButton = new javax.swing.JButton();
-        ReviewRowsJButton = new javax.swing.JButton();
-        ReviewColsJButton = new javax.swing.JButton();
         MidPointJSlider = new javax.swing.JSlider();
+        ContrastPlusJButton = new javax.swing.JButton();
+        ScaleJSlider = new javax.swing.JSlider();
+        SaveImageJButton = new javax.swing.JButton();
+        ReloadJButton = new javax.swing.JButton();
         HomographyJButton = new javax.swing.JButton();
         ScaleJButton = new javax.swing.JButton();
-        ScaleJSlider = new javax.swing.JSlider();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        OCRProcessJButton = new javax.swing.JButton();
+        LoadPBNJButton = new javax.swing.JButton();
+        jCheckBox1 = new javax.swing.JCheckBox();
+        jTextField2 = new javax.swing.JTextField();
+        jComboBox1 = new javax.swing.JComboBox<>();
+        ReviewColsJButton = new javax.swing.JButton();
+        jTextField1 = new javax.swing.JTextField();
+        ReviewRowsJButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-
-        ReloadJButton.setText("Reload Image");
-        ReloadJButton.setToolTipText("Reload image from file");
-        ReloadJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ReloadJButtonActionPerformed(evt);
-            }
-        });
-
-        jCheckBox1.setText("Lock selection");
-        jCheckBox1.setToolTipText("Select this when you have selected the clues to process (click and drag)");
-        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox1ActionPerformed(evt);
-            }
-        });
-
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Column Clues", "Row Clues" }));
-        jComboBox1.setToolTipText("Choose between processing column and row clues");
-
-        jLabel1.setText("#");
-        jLabel1.setToolTipText("# of columns or rows of clues");
-
-        jTextField1.setText("10");
-        jTextField1.setToolTipText("# of sets of columns or rows (of clues) to process");
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
-            }
-        });
-
-        ProcessJButton.setText("OCR Process...");
-        ProcessJButton.setToolTipText("Use OCR to extract clue values");
-        ProcessJButton.setEnabled(false);
-        ProcessJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ProcessJButtonActionPerformed(evt);
-            }
-        });
-
-        jLabel2.setText("Max # Clues");
-        jLabel2.setToolTipText("Max # of clues per col or row");
-
-        jTextField2.setText("10");
-        jTextField2.setToolTipText("Maximum # of clues per column or row");
-
-        ContrastPlusJButton.setText("Contrast+");
-        ContrastPlusJButton.setToolTipText("Brighten pixels above midpoint and darken those below");
-        ContrastPlusJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ContrastPlusJButtonActionPerformed(evt);
-            }
-        });
-
-        BrightenJButton.setText("Brighten");
-        BrightenJButton.setToolTipText("Brighten pixels above midpoint");
-        BrightenJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                BrightenJButtonActionPerformed(evt);
-            }
-        });
 
         saveJButton.setText("Save Clues...");
         saveJButton.setToolTipText("Save clues to .pbn file format");
@@ -431,11 +383,21 @@ private void ProcessSelection ()
             }
         });
 
-        undoRotateJButton.setText("Undo Rotate");
-        undoRotateJButton.setToolTipText("Undo the applied rotation");
-        undoRotateJButton.addActionListener(new java.awt.event.ActionListener() {
+        SavePBNJButton.setText("Save PBN...");
+        SavePBNJButton.setEnabled(false);
+        SavePBNJButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                undoRotateJButtonActionPerformed(evt);
+                SavePBNJButtonActionPerformed(evt);
+            }
+        });
+
+        jPanel3.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        BrightenJButton.setText("Brighten");
+        BrightenJButton.setToolTipText("Brighten pixels above midpoint");
+        BrightenJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BrightenJButtonActionPerformed(evt);
             }
         });
 
@@ -447,30 +409,44 @@ private void ProcessSelection ()
             }
         });
 
-        ReviewRowsJButton.setText("Review Rows...");
-        ReviewRowsJButton.setToolTipText("Review the row clues that you've already processed");
-        ReviewRowsJButton.setEnabled(false);
-        ReviewRowsJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ReviewRowsJButtonActionPerformed(evt);
-            }
-        });
-
-        ReviewColsJButton.setText("Review Cols...");
-        ReviewColsJButton.setToolTipText("Review the column clues that you've already processed");
-        ReviewColsJButton.setEnabled(false);
-        ReviewColsJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ReviewColsJButtonActionPerformed(evt);
-            }
-        });
-
         MidPointJSlider.setMajorTickSpacing(64);
         MidPointJSlider.setMaximum(256);
         MidPointJSlider.setPaintLabels(true);
         MidPointJSlider.setPaintTicks(true);
         MidPointJSlider.setToolTipText("Sets pixel value at midpoint between bright and dark");
         MidPointJSlider.setValue(127);
+
+        ContrastPlusJButton.setText("Contrast+");
+        ContrastPlusJButton.setToolTipText("Brighten pixels above midpoint and darken those below");
+        ContrastPlusJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ContrastPlusJButtonActionPerformed(evt);
+            }
+        });
+
+        ScaleJSlider.setMajorTickSpacing(50);
+        ScaleJSlider.setMaximum(200);
+        ScaleJSlider.setMinimum(50);
+        ScaleJSlider.setPaintLabels(true);
+        ScaleJSlider.setPaintTicks(true);
+        ScaleJSlider.setToolTipText("Size scaling to apply (percentage)");
+        ScaleJSlider.setValue(100);
+
+        SaveImageJButton.setText("Save Image...");
+        SaveImageJButton.setToolTipText("Save the modified image to file");
+        SaveImageJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                SaveImageJButtonActionPerformed(evt);
+            }
+        });
+
+        ReloadJButton.setText("Reload Image");
+        ReloadJButton.setToolTipText("Reload image from file");
+        ReloadJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ReloadJButtonActionPerformed(evt);
+            }
+        });
 
         HomographyJButton.setText("Homography Txfm");
         HomographyJButton.setToolTipText("CTRL-click the 4 corners of the polygon you need to straighten");
@@ -487,13 +463,207 @@ private void ProcessSelection ()
             }
         });
 
-        ScaleJSlider.setMajorTickSpacing(50);
-        ScaleJSlider.setMaximum(200);
-        ScaleJSlider.setMinimum(50);
-        ScaleJSlider.setPaintLabels(true);
-        ScaleJSlider.setPaintTicks(true);
-        ScaleJSlider.setToolTipText("Size scaling to apply (percentage)");
-        ScaleJSlider.setValue(100);
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(ScaleJSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 224, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(ReloadJButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(manualJButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(HomographyJButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(ContrastPlusJButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(BrightenJButton, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(ScaleJButton, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(MidPointJSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 226, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(SaveImageJButton))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(ReloadJButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(manualJButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(HomographyJButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(ContrastPlusJButton)
+                    .addComponent(BrightenJButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(MidPointJSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(ScaleJButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(ScaleJSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(SaveImageJButton)
+                .addContainerGap())
+        );
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        jLabel1.setText("#");
+        jLabel1.setToolTipText("# of columns or rows of clues");
+
+        jLabel2.setText("Max # Clues");
+        jLabel2.setToolTipText("Max # of clues per col or row");
+
+        OCRProcessJButton.setText("OCR Process...");
+        OCRProcessJButton.setToolTipText("Use OCR to extract clue values");
+        OCRProcessJButton.setEnabled(false);
+        OCRProcessJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                OCRProcessJButtonActionPerformed(evt);
+            }
+        });
+
+        LoadPBNJButton.setText("Compare w/PBN...");
+        LoadPBNJButton.setToolTipText("Load a .pbn file to compare with image clues");
+        LoadPBNJButton.setEnabled(false);
+        LoadPBNJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                LoadPBNJButtonActionPerformed(evt);
+            }
+        });
+
+        jCheckBox1.setText("Lock selection");
+        jCheckBox1.setToolTipText("Select this when you have selected the clues to process (click and drag)");
+        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBox1ActionPerformed(evt);
+            }
+        });
+
+        jTextField2.setText("10");
+        jTextField2.setToolTipText("Maximum # of clues per column or row");
+
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Column Clues", "Row Clues" }));
+        jComboBox1.setToolTipText("Choose between processing column and row clues");
+
+        ReviewColsJButton.setText("Review Cols...");
+        ReviewColsJButton.setToolTipText("Review the column clues that you've already processed");
+        ReviewColsJButton.setEnabled(false);
+        ReviewColsJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ReviewColsJButtonActionPerformed(evt);
+            }
+        });
+
+        jTextField1.setText("10");
+        jTextField1.setToolTipText("# of sets of columns or rows (of clues) to process");
+        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField1ActionPerformed(evt);
+            }
+        });
+
+        ReviewRowsJButton.setText("Review Rows...");
+        ReviewRowsJButton.setToolTipText("Review the row clues that you've already processed");
+        ReviewRowsJButton.setEnabled(false);
+        ReviewRowsJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ReviewRowsJButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel2Layout.createSequentialGroup()
+                            .addComponent(OCRProcessJButton)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(LoadPBNJButton))
+                        .addComponent(ReviewRowsJButton))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(jCheckBox1, javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jComboBox1, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
+                                    .addGap(6, 6, 6)
+                                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(jPanel2Layout.createSequentialGroup()
+                                            .addComponent(jLabel2)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(jPanel2Layout.createSequentialGroup()
+                                            .addComponent(jLabel1)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                            .addComponent(ReviewColsJButton))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jCheckBox1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(OCRProcessJButton)
+                    .addComponent(LoadPBNJButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(ReviewRowsJButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(ReviewColsJButton)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(saveJButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(SavePBNJButton)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(52, 52, 52)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(saveJButton)
+                    .addComponent(SavePBNJButton))
+                .addContainerGap())
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -501,32 +671,9 @@ private void ProcessSelection ()
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField2))
-                    .addComponent(ReloadJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(undoRotateJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(ContrastPlusJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jCheckBox1)
-                    .addComponent(ProcessJButton)
-                    .addComponent(saveJButton)
-                    .addComponent(ReviewRowsJButton)
-                    .addComponent(ReviewColsJButton)
-                    .addComponent(MidPointJSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addComponent(BrightenJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField1))
-                    .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(manualJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(HomographyJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(ScaleJButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(ScaleJSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -534,45 +681,8 @@ private void ProcessSelection ()
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(ReloadJButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(manualJButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(undoRotateJButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(HomographyJButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ContrastPlusJButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(BrightenJButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(MidPointJSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ScaleJButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ScaleJSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jCheckBox1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel1))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel2)
-                            .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ProcessJButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ReviewRowsJButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(ReviewColsJButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(saveJButton))
-                    .addComponent(jScrollPane1))
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 704, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -590,7 +700,8 @@ private void ProcessSelection ()
 
     private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
         ic.setLockSelection (jCheckBox1.isSelected());
-		ProcessJButton.setEnabled(jCheckBox1.isSelected());
+		OCRProcessJButton.setEnabled(jCheckBox1.isSelected());
+		LoadPBNJButton.setEnabled(jCheckBox1.isSelected());
     }//GEN-LAST:event_jCheckBox1ActionPerformed
 
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
@@ -599,9 +710,9 @@ private void ProcessSelection ()
 			ic.NotifyNewNumColsOrRows (new_num);
     }//GEN-LAST:event_jTextField1ActionPerformed
 
-    private void ProcessJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ProcessJButtonActionPerformed
-        ProcessSelection();
-    }//GEN-LAST:event_ProcessJButtonActionPerformed
+    private void OCRProcessJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OCRProcessJButtonActionPerformed
+        ProcessSelection(null);
+    }//GEN-LAST:event_OCRProcessJButtonActionPerformed
 
     private void ContrastPlusJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ContrastPlusJButtonActionPerformed
 	    ic.increaseContrast();
@@ -653,10 +764,6 @@ private void ProcessSelection ()
 		save_JFrame.setDefaultCloseOperation (JFrame.DO_NOTHING_ON_CLOSE);
 		save_JFrame.setVisible(true);
     }//GEN-LAST:event_saveJButtonActionPerformed
-
-    private void undoRotateJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_undoRotateJButtonActionPerformed
-        ic.UndoRotation();
-    }//GEN-LAST:event_undoRotateJButtonActionPerformed
 
     private void manualJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manualJButtonActionPerformed
 		if (!ic.getIsLine())
@@ -847,26 +954,330 @@ private void ProcessSelection ()
 		ic.repaint();
     }//GEN-LAST:event_ScaleJButtonActionPerformed
 
+    private void LoadPBNJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LoadPBNJButtonActionPerformed
+    
+		// Figure out what to do if we've already read a .pbn file
+		if (pbnFile != null && myPuzzle != null)
+		{
+			int result = JOptionPane.showConfirmDialog(this, "Do you want to load a new .pbn file?", "Open PBN",
+					JOptionPane.YES_NO_OPTION);
+			if (result == JOptionPane.NO_OPTION) return;
+			else pbnFile = null;
+		}
+		
+		// Read a new pbnFile if necessary
+		File f = null;
+		if (pbnFile == null)
+		{
+			// Let's get a PBN file to read
+			FileDialog fd = new FileDialog((java.awt.Frame) null, "Select a .pbn file to read", FileDialog.LOAD);
+			fd.setFilenameFilter (new FilenameFilter ()
+			{
+				public boolean accept (File f, String name)
+				{
+					String extension = name.substring(name.lastIndexOf("."));
+					if (extension == null) return false;
+					if (extension.compareTo (".pbn") == 0) return true;
+					return false;
+				}
+			});
+			fd.setVisible(true);
+			if (fd.getFile() == null) return;
+			f = new File(fd.getDirectory(), fd.getFile());
+
+			// Let's try and read the file
+			myPuzzle = PuzzleStaticUtilities.CreatePuzzleFromFile(f);
+		}
+		
+		// if successful, then we'll save the file name!
+		if (myPuzzle != null)
+		{
+			// save the file name
+			pbnFile = f;
+			
+			// okay, now we need to get the clues to extract for comparison with the image
+			myGrabCluesFromPBNJFrame = new GrabCluesFromPBNJFrame (this, myPuzzle, this.IsColSelected(),
+				this.getNumColsOrRows());
+			myGrabCluesFromPBNJFrame.setVisible(true);
+			
+			// now... we wait form the grabclues JFrame to send us the info we need
+			
+			// enable the savePBN button
+			SavePBNJButton.setEnabled(true);
+			
+		} else pbnFile = null;
+		
+    }//GEN-LAST:event_LoadPBNJButtonActionPerformed
+
+    private void SavePBNJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SavePBNJButtonActionPerformed
+
+		// Grab row and column clues (we need at least one of them to be available)
+		ArrayList<String> myColClues = null;
+		ArrayList<String> myRowClues = null;
+		if (processcol_JFrame != null) myColClues = processcol_JFrame.GetClues();
+		if (processrow_JFrame != null) myRowClues = processrow_JFrame.GetClues();
+		
+		// abort if we don't have either
+		if (myColClues == null && myRowClues == null)
+		{
+			JOptionPane.showMessageDialog(this, "No clues have been processed", 
+					"Save Error", JOptionPane.OK_OPTION);
+			return;
+		}
+		
+		// check that we have something for each clue
+		if (myColClues != null)
+		{
+			for (int i=0; i<myColClues.size(); i++)
+				if (myColClues.get(i) == null || myColClues.get(i).length() == 0)
+				{
+					JOptionPane.showMessageDialog(this, 
+						"Not all columns have been processed (" + i + ")", "Save Error", JOptionPane.OK_OPTION);
+					return;
+				}
+		}
+		if (myRowClues != null)
+		{
+			for (int i=0; i<myRowClues.size(); i++)
+				if (myRowClues.get(i) == null || myRowClues.get(i).length() == 0)
+				{
+					JOptionPane.showMessageDialog(this, 
+						"Not all rows have been processed (" + i + ")", "Save Error", JOptionPane.OK_OPTION);
+					return;
+				}
+		}
+		
+		// Update the puzzle with the new clues
+		if (myColClues != null)
+		{
+			int start = this.start_col_clue_from_PBN;
+			for (int i=0; i<myColClues.size(); i++)
+			{
+				String clues = myColClues.get(i).trim();
+				clues = SaveClues_JFrame.ReplaceCRs (clues);		
+				String[] cluelist = clues.split(" ");
+				
+				// number of clues
+				int numclues = cluelist.length;
+				
+				// reset the myPuzzle clue info
+				int col = start + i;
+				myPuzzle.SetCol_NClues (col, numclues);
+				
+				// set all clue values to new values
+				for (int cl=0; cl<numclues; cl++)
+				{
+					int val = 0;
+					try {
+						val = Integer.parseInt(cluelist[cl]);
+						myPuzzle.SetCol_Clues (col, cl, val);						
+					}
+					catch (NumberFormatException nfe)
+					{
+						JOptionPane.showMessageDialog (this, "Serious bug parsing new clues", "Parse Error",
+								JOptionPane.OK_OPTION);
+						return;
+					}
+				}
+			}
+		}
+		if (myRowClues != null)
+		{
+			int start = this.start_row_clue_from_PBN;
+			for (int i=0; i<myRowClues.size(); i++)
+			{
+				String clues = myRowClues.get(i).trim();
+				String[] cluelist = clues.split(" ");
+				
+				// number of clues
+				int numclues = cluelist.length;
+				
+				// reset the myPuzzle clue info
+				int row = start + i;
+				myPuzzle.SetRow_NClues (row, numclues);
+				
+				// set all clue values to new values
+				for (int cl=0; cl<numclues; cl++)
+				{
+					int val = 0;
+					try {
+						val = Integer.parseInt(cluelist[cl]);
+						myPuzzle.SetRow_Clues (row, cl, val);						
+					}
+					catch (NumberFormatException nfe)
+					{
+						JOptionPane.showMessageDialog (this, "Serious bug parsing new clues", "Parse Error",
+								JOptionPane.OK_OPTION);
+						return;
+					}
+				}							
+			}
+		}
+		
+		// Okay let's get a new .pbn file to write to
+		// Have user select a PBN image
+		FileDialog fd = new FileDialog((java.awt.Frame) null, "Choose a .pbn file to write to", FileDialog.SAVE);
+		fd.setDirectory (pbnFile.getParent());
+		fd.setFile (pbnFile.getName());
+		fd.setFilenameFilter (new FilenameFilter ()
+		{
+			public boolean accept (File f, String name)
+			{
+				String extension = name.substring(name.lastIndexOf("."));
+				if (extension == null) return false;
+				extension = extension.toLowerCase();
+				if (extension.compareTo (".pbn") == 0) return true;
+				return false;
+			}
+		});
+		fd.setVisible(true);
+		if (fd.getFile() == null) return;
+		File f = new File(fd.getDirectory(), fd.getFile());
+		
+		// Add .pbn if not already at the end of the file name
+		if (!f.getName().endsWith (".pbn"))
+		{
+			File newF = new File (f.getParent(), f.getName() + ".pbn");
+			f = newF;
+		}
+		
+		// now write the new file
+		if (PuzzleStaticUtilities.WritePuzzleToFile(myPuzzle, f, true))
+			JOptionPane.showMessageDialog(null, "Updated clues written to " + f.getName());
+		else
+			JOptionPane.showMessageDialog(this, "Error writing updated clues written to " + f.getName(), "File Error", 
+					JOptionPane.OK_OPTION);		
+    }//GEN-LAST:event_SavePBNJButtonActionPerformed
+
+	public static String[] ShowImageIOInfo () {
+//        String[] formats = ImageIO.getReaderFormatNames();
+//        for (int i = 0; i < formats.length; ++i) {
+//          System.out.println("reader " + formats[i]);
+//        }
+
+        String[] names = ImageIO.getWriterFormatNames();
+//        for (int i = 0; i < names.length; ++i) {
+//          System.out.println("writer " + names[i]);
+//        }
+        
+        return names;
+    }        
+
+	
+    private void SaveImageJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SaveImageJButtonActionPerformed
+
+		// Let's get the ImageIO formats we can read
+		final String[] formats = ShowImageIOInfo();
+
+		// Okay let's get a new image file to write to
+		FileDialog fd = new FileDialog((java.awt.Frame) null, "Choose an image file to write to", FileDialog.SAVE);
+		fd.setDirectory (originalFile.getParent());
+		fd.setFile (originalFile.getName());
+		fd.setFilenameFilter (new FilenameFilter ()
+		{
+			public boolean accept (File f, String name)
+			{
+				String extension = name.substring(name.lastIndexOf("."));
+				if (extension == null) return false;
+				extension = extension.toLowerCase();
+                for (int i=0; i<formats.length; i++)
+                    if (extension.compareTo ("." + formats[i]) == 0) return true;
+				return false;
+			}
+		});
+		fd.setVisible(true);
+		if (fd.getFile() == null) return;
+		File f = new File(fd.getDirectory(), fd.getFile());
+		
+		// Get the extension so I know the image format type selected
+		String name = f.getName();
+		String extension = name.substring(name.lastIndexOf("."));
+		if (extension.startsWith(".")) extension = extension.substring(1);
+		
+		// Grab the BufferedImage from the image component
+		BufferedImage theImage = ic.getCurrentImage();
+		
+		// Now write the image to the selected output file
+		try
+		{
+			ImageIO.write(theImage, extension, f);
+			JOptionPane.showMessageDialog (null, "Image saved!");
+		}
+		catch (IOException ie)
+		{
+			JOptionPane.showConfirmDialog (null, "Error saving image", "Image Write Error", JOptionPane.OK_OPTION);
+		}
+        
+    }//GEN-LAST:event_SaveImageJButtonActionPerformed
+
+	public void SetStartingColOrRowForComparison (int start, boolean is_col)
+	{
+		// need to set up ArrayList<String> for clues from myPuzzle starting
+		// with row or column start
+		ArrayList<String> clueStrings = new ArrayList();
+		
+		for (int i=0; i<this.getNumColsOrRows(); i++)
+		{
+			String clues = "";
+			int ic = i + start;
+			if (is_col)
+			{
+				int n = myPuzzle.GetCol_NClues(ic);
+				for (int c=0; c<n; c++)
+				{
+					int val = myPuzzle.GetCol_Clues(ic, c);
+					clues += Integer.toString(val) + "\n";
+				}
+				clueStrings.add(clues.trim());
+			} else
+			{
+				int n = myPuzzle.GetRow_NClues(ic);
+				for (int c=0; c<n; c++)
+				{
+					int val = myPuzzle.GetRow_Clues(ic, c);
+					clues += Integer.toString(val) + " ";
+				}	
+				clueStrings.add(clues.trim());
+			}
+		}
+		if (is_col)
+			this.start_col_clue_from_PBN = start;
+		else
+			this.start_row_clue_from_PBN = start;
+		
+		// kill the GrabClues JFrame
+		myGrabCluesFromPBNJFrame.dispose();
+		myGrabCluesFromPBNJFrame = null;
+		
+		// then set up ProcessRow|Col_JFrame with these clues from the .pbn
+		ProcessSelection (clueStrings);
+	}
+	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton BrightenJButton;
     private javax.swing.JButton ContrastPlusJButton;
     private javax.swing.JButton HomographyJButton;
+    private javax.swing.JButton LoadPBNJButton;
     private javax.swing.JSlider MidPointJSlider;
-    private javax.swing.JButton ProcessJButton;
+    private javax.swing.JButton OCRProcessJButton;
     private javax.swing.JButton ReloadJButton;
     private javax.swing.JButton ReviewColsJButton;
     private javax.swing.JButton ReviewRowsJButton;
+    private javax.swing.JButton SaveImageJButton;
+    private javax.swing.JButton SavePBNJButton;
     private javax.swing.JButton ScaleJButton;
     private javax.swing.JSlider ScaleJSlider;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JButton manualJButton;
     private javax.swing.JButton saveJButton;
-    private javax.swing.JButton undoRotateJButton;
     // End of variables declaration//GEN-END:variables
 }

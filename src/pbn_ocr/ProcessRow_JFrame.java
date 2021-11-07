@@ -39,7 +39,8 @@ private ArrayList<String> myClues;
 /**
  * Creates new form Puzzle_JFrame
  */
-public ProcessRow_JFrame(Puzzle_JFrame theFrame, String name, Point start, Point end) {	
+public ProcessRow_JFrame(Puzzle_JFrame theFrame, String name, Point start, Point end, 
+		ArrayList<String> startingClues) {	
 
 //	bimage = img;	
 	puzzle_JFrame = theFrame;
@@ -52,8 +53,12 @@ public ProcessRow_JFrame(Puzzle_JFrame theFrame, String name, Point start, Point
 	max_num_clues = puzzle_JFrame.getMaxNumCluesPerColOrRow();
 	
 	// Initialize the ArrayList with empty strings
-	myClues = new ArrayList<String>(num_cols_or_rows);
-	for (int i=0; i<num_cols_or_rows; i++) myClues.add(null);
+	if (startingClues == null)
+	{
+		myClues = new ArrayList<String>(num_cols_or_rows);
+		for (int i=0; i<num_cols_or_rows; i++) myClues.add(null);
+	} else
+		myClues = startingClues;
 	
 	// Set up new Settings
 	mySettings = new ProcessSettings (false, max_num_clues);
@@ -81,46 +86,57 @@ public ProcessRow_JFrame(Puzzle_JFrame theFrame, String name, Point start, Point
 	float startx = 0.f;
 	
 	// Process our first image and add output to the TextArea
-	String ocr_output = "";
-	try
-	{ 
-		if (ProcessLineJCheckBox.isSelected())
-		{
-			ocr_output = tess.doOCR (doctoredImage);
-			ocr_output = AddSpaces(ocr_output.trim());
-		} else
-		{
-			ocr_output = "";
-			for (int i=0; i<max_num_clues; i++)
+	if (startingClues == null)
+	{
+		String ocr_output = "";
+		try
+		{ 
+			if (ProcessLineJCheckBox.isSelected())
 			{
-				BufferedImage clueImage = doctoredImage.getSubimage ((int)Math.floor(startx), 0, ipixels_per_clue, doctoredImage.getHeight());
-				startx += pixels_per_clue;
-				String ocr_out = tess.doOCR (clueImage);
-				ocr_output = ocr_output + " " + ocr_out;
+				ocr_output = tess.doOCR (doctoredImage);
+				ocr_output = AddSpaces(ocr_output.trim());
+			} else
+			{
+				ocr_output = "";
+				for (int i=0; i<max_num_clues; i++)
+				{
+					BufferedImage clueImage = doctoredImage.getSubimage ((int)Math.floor(startx), 0, ipixels_per_clue, doctoredImage.getHeight());
+					startx += pixels_per_clue;
+					String ocr_out = tess.doOCR (clueImage);
+					ocr_output = ocr_output + " " + ocr_out;
+				}
 			}
+			ocr_output = ocr_output.trim();
+			myClues.set(cur_index, ocr_output);		
 		}
-		ocr_output = ocr_output.trim();
-		myClues.set(cur_index, ocr_output);		
-	}
-	catch (TesseractException te)
-	{ ocr_output = te.getLocalizedMessage(); }
-	SetText(ocr_output);	
+		catch (TesseractException te)
+		{ ocr_output = te.getLocalizedMessage(); }
+		SetText(ocr_output);	
+	} else
+		SetText (startingClues.get(0));
 	SetLabel (cur_index, num_cols_or_rows);
 		
 	setTitle (name);
 	
 	jTextArea1.addKeyListener(this);
+	
+	if (startingClues != null)
+		puzzle_JFrame.EnableReviewRows();
 }
 
-public void ResetSettings ()
+public void ResetSettings (ArrayList<String> pbnClues)
 {
 	// Initialize the image component with our first col or row to process
 	num_cols_or_rows = puzzle_JFrame.getNumColsOrRows();
 	max_num_clues = puzzle_JFrame.getMaxNumCluesPerColOrRow();
 	cur_index = 0;
 	// Initialize the ArrayList with empty strings
-	myClues = new ArrayList<String>(num_cols_or_rows);
-	for (int i=0; i<num_cols_or_rows; i++) myClues.add(null);		
+	if (pbnClues == null)
+	{
+		myClues = new ArrayList<String>(num_cols_or_rows);
+		for (int i=0; i<num_cols_or_rows; i++) myClues.add(null);	
+	} else
+		myClues = pbnClues;
 	ProcessCurRow (false);
 }
 
@@ -280,6 +296,8 @@ public void keyTyped (KeyEvent ke)
         jLabel1 = new javax.swing.JLabel();
         NudgeDownJButton = new javax.swing.JButton(iconDown);
         jButton2 = new javax.swing.JButton();
+        NudgeLeftJButton = new javax.swing.JButton(iconLeft);
+        NudgeRightJButton = new javax.swing.JButton(iconRight);
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -294,6 +312,9 @@ public void keyTyped (KeyEvent ke)
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
         jTextArea1.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                jTextArea1KeyPressed(evt);
+            }
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 jTextArea1KeyReleased(evt);
             }
@@ -407,6 +428,22 @@ public void keyTyped (KeyEvent ke)
             }
         });
 
+        NudgeLeftJButton.setText("Left");
+        NudgeLeftJButton.setToolTipText("Nudge selection box to the left");
+        NudgeLeftJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                NudgeLeftJButtonActionPerformed(evt);
+            }
+        });
+
+        NudgeRightJButton.setText("Right");
+        NudgeRightJButton.setToolTipText("Nudge selection box to the right");
+        NudgeRightJButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                NudgeRightJButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -417,13 +454,19 @@ public void keyTyped (KeyEvent ke)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(reportJLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(NudgeUpJButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(NudgeDownJButton))
-                            .addComponent(reportJLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addComponent(NudgeUpJButton)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(NudgeDownJButton))
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addComponent(NudgeLeftJButton)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(NudgeRightJButton))))))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(upJButton, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -472,7 +515,11 @@ public void keyTyped (KeyEvent ke)
                     .addComponent(jLabel1)
                     .addComponent(NudgeUpJButton)
                     .addComponent(NudgeDownJButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(NudgeLeftJButton)
+                    .addComponent(NudgeRightJButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 46, Short.MAX_VALUE)
                 .addComponent(ProcessLineJCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -505,9 +552,9 @@ public void keyTyped (KeyEvent ke)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 87, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jScrollPane2)))
                 .addContainerGap())
         );
 
@@ -591,6 +638,28 @@ public void keyTyped (KeyEvent ke)
 		ProcessCurRow(false);
     }//GEN-LAST:event_NudgeDownJButtonActionPerformed
 
+    private void jTextArea1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextArea1KeyPressed
+        // save any changes to the clues
+		String newText = RemoveCRs(jTextArea1.getText());
+		myClues.set(cur_index, newText);
+    }//GEN-LAST:event_jTextArea1KeyPressed
+
+    private void NudgeLeftJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NudgeLeftJButtonActionPerformed
+        puzzle_JFrame.GetImageComponent().MoveSelectionLeft();
+		ic.repaint();
+		startPt = puzzle_JFrame.GetStartPt();
+		endPt   = puzzle_JFrame.GetEndPt();		
+		ProcessCurRow(false);
+    }//GEN-LAST:event_NudgeLeftJButtonActionPerformed
+
+    private void NudgeRightJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_NudgeRightJButtonActionPerformed
+        puzzle_JFrame.GetImageComponent().MoveSelectionRight();
+		ic.repaint();
+		startPt = puzzle_JFrame.GetStartPt();
+		endPt   = puzzle_JFrame.GetEndPt();		
+		ProcessCurRow(false);
+    }//GEN-LAST:event_NudgeRightJButtonActionPerformed
+
 	private String RemoveCRs (String text)
 	{
 		String nextText = text.replace("\n", " ");
@@ -598,6 +667,8 @@ public void keyTyped (KeyEvent ke)
 	}
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton NudgeDownJButton;
+    private javax.swing.JButton NudgeLeftJButton;
+    private javax.swing.JButton NudgeRightJButton;
     private javax.swing.JButton NudgeUpJButton;
     private javax.swing.JCheckBox ProcessLineJCheckBox;
     private javax.swing.JButton downJButton;

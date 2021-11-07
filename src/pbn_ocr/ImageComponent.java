@@ -168,7 +168,7 @@ class ImageComponent extends JComponent implements Scrollable, MouseMotionListen
 						int width  = selectedCluesEnd.x - selectedCluesStart.x;
 						int height = selectedCluesEnd.y - selectedCluesStart.y;
 						g.setColor (Color.CYAN);
-						g.drawRect (selectedCluesStart.x, selectedCluesStart.y-1, width, height+1);
+						g.drawRect (selectedCluesStart.x-1, selectedCluesStart.y-1, width+1, height+1);
 					}
 				} else
 					g.drawRect (startPt.x, startPt.y, endPt.x-startPt.x, endPt.y-startPt.y);
