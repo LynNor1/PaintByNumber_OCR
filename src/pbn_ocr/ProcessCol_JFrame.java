@@ -32,7 +32,7 @@ private ITesseract tess = null;
 
 private ProcessSettings mySettings;
 
-private ArrayList<String> myClues;
+private ArrayList<String> myClues = null;
 
 /**
  * Creates new form Puzzle_JFrame
@@ -101,6 +101,9 @@ public ProcessCol_JFrame(Puzzle_JFrame theFrame, String name, Point start, Point
 	if (startingClues != null)
 		puzzle_JFrame.EnableReviewCols();	
 }
+
+public boolean HasClues ()
+{ return myClues != null; }
 
 public void ResetSettings (ArrayList<String> pbnClues)
 {

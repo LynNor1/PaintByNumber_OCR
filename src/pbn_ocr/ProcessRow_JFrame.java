@@ -124,6 +124,9 @@ public ProcessRow_JFrame(Puzzle_JFrame theFrame, String name, Point start, Point
 		puzzle_JFrame.EnableReviewRows();
 }
 
+public boolean HasClues ()
+{ return myClues != null; }
+
 public void ResetSettings (ArrayList<String> pbnClues)
 {
 	// Initialize the image component with our first col or row to process

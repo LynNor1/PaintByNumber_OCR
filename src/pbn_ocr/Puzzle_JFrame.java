@@ -320,8 +320,9 @@ private void ProcessSelection (ArrayList<String> pbnClues)
 			processcol_JFrame = new ProcessCol_JFrame (this, "Process Columns", startPt, endPt, pbnClues);
 			processcol_JFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		}
-		processcol_JFrame.setVisible(true);	
-		processcol_JFrame.ResetSettings(pbnClues);
+		processcol_JFrame.setVisible(true);
+		if (!processcol_JFrame.HasClues() || pbnClues != null)
+			processcol_JFrame.ResetSettings(pbnClues);
 	} else
 	{
 		if (processrow_JFrame == null)
@@ -330,7 +331,8 @@ private void ProcessSelection (ArrayList<String> pbnClues)
 			processrow_JFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		}
 		processrow_JFrame.setVisible(true);
-		processrow_JFrame.ResetSettings(pbnClues);
+		if (!processrow_JFrame.HasClues() || pbnClues != null)
+			processrow_JFrame.ResetSettings(pbnClues);
 	}
 	
 }

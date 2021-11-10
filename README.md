@@ -1,5 +1,38 @@
 # PaintByNumber_OCR
-Java program to scan a Nonogram .tiff (or other format) and assist the user in extracting the puzzle clues using OCR.  This program was developed on an Intel 2016 MacBook Pro using Java 8 and NetBeans 8.2.
+Java program to scan a Nonogram .tiff (or other image format) and assist the user in extracting the puzzle clues using OCR and writing those clues into a text file format compatible with PaintByNumberPro.
+
+# Instructions for Use
+
+## Importing the puzzle image
+
+When you first run the program, you will be immediately asked to select an image to load.  You will have an easier time with the OCR processing if you use a flatbed scanner for your puzzle (or a screen capture).  You can take a photo of the puzzle, but the paper needs to be as flat as possible for good results.  And the lens distortion should be minimal.
+
+Note that you do not need to scan in an entire puzzle all at once.  You can scan in portions of the clues and write out portions of the clues, combining them later into a single file to be used with PaintByNumberPro.
+
+As a note, I've been scanning the puzzles in black and white at 200 dpi.  You can use photos, but you may need to scale them to a smaller size if they're too big to work with easily.  This can be done in this OCR program.
+
+## Main Interface
+
+After the image has been loaded, your main interface will look like this: 
+
+![main interface](readme_images/OCR_Main_Window.png)
+
+### Rotate the image
+
+In this example, the image was scanned on a flatbed scanner and just needs to be rotated.  To do so, hold the SHIFT key and left-click-and-drag a line that needs to be made vertical:
+
+![vertical line example](readme_images/Manual_straighten_example.png)
+
+Then click on the `Manual Straight.` button.
+
+### Use homography transform
+
+If you took a photo of your puzzle, then it likely needs more than just rotating to get the clues lined up in a nice rectangle.  Hold down the CTRL key and left-click the four corners of the area you would like to straighten out:
+
+![homography selection example](readme_images/Homography_selection_example.png)
+
+# Development Environment
+This program was developed on an Intel 2016 MacBook Pro using Java 8 and NetBeans 8.2.
 
 To find Java 8 JDKs for Mac and PC, click here [Java 8 Archive](https://www.oracle.com/java/technologies/javase/javase8u211-later-archive-downloads.html).  To find NetBeans 8.2 for PC, you can find it here [lucky link to NetBeans 8.2](https://softfamous.com/netbeans-ide/).  For the Mac, it may be possible to install older versions of NetBeans using homebrew:
 
@@ -12,7 +45,7 @@ brew install --cask netbeansXX
 
 where `netbeansXX` is the version you are looking to install.  `brew search netbeans` returns a list of available casks related to netbeans.  When I tried this on my Mac, I see that only the latest version 12.5 is available.
 
-# Installing Tesseract OCR for Mac or PC with Java Interface
+## Installing Tesseract OCR for Mac or PC with Java Interface
 Tesseract OCR is used for extracting the puzzle clues from the scanned Nonogram.  It seems that I have the native library installation via homebrew and the Java interface from Tess4J.  I believe I downloaded Tess4J from SourceForge here: [SourceForge Tess4J download](https://sourceforge.net/projects/tess4j/).  And my homebrew version is 4.1.0.  There are newer versions of Tesseract available now (v5) and I'm not sure if Tess4J will work with these newer versions.
 
 ## Tess4J and NetBeans
@@ -125,7 +158,7 @@ public class Tess4J_Example {
 }
 ```
 
-# Installing OpenCV for Mac or PC with Java Interfaces
+## Installing OpenCV for Mac or PC with Java Interfaces
 On a PC, it is easy to get OpenCV with Java interfaces.  Click on this link [OpenCV Releases](https://opencv.org/releases/) to download the complete package for OpenCV.  The Java interfaces are contained within the build/java folder and the native libraries are in the build/java/x86 and build/java/x64 folders.
 
 Getting OpenCV installed on my Intel MacBook Pro was a little more difficult.  You can use homebrew to install OpenCV, but it no longer supports building the Java interfaces.  So I ended up trying to install OpenCV from source and building it locally on my machine.  I used instructions from here: [OpenCV 4 with Java instructions](https://delabassee.com/OpenCVJava/) by David Delabassée.
