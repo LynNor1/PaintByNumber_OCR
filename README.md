@@ -31,6 +31,28 @@ If you took a photo of your puzzle, then it likely needs more than just rotating
 
 ![homography selection example](readme_images/Homography_selection_example.png)
 
+Then click on the `Homography Txfm` button.  Afterwards, the transformation, your selected region should be straightened out and pre-selected for OCR processing:
+
+![homography transormation example](readme_images/Homography_transformed_example.png)
+
+### Scaling the image size
+
+If the image is too big or too small to work with, you can scale the image using by setting the scaling slider (from 50% to 200%) and clicking on the `Scale Size` button.  You will see that scaling does affect the image contrast and brightness.  How to fix this is described later.
+
+### Reloading the image
+
+If at any time you feel you've messed something up, you can reload the image by selecting the `Reload` button and start over.
+
+## Improving image contrast and brightness
+
+If the image does not have enough contrast and is not bright enough (meaning the background is not white enough), the OCR process will have a more difficult time recognizing the clues.
+
+When you choose the `Contrast+` button, the code brightens all pixels whose values lay to the right of the selected value on the greyscale slider (0-256) and darkens those values that lay to the left.
+
+When you choose the `Brighten` button, the code brightens all pixels whose values lay to the right of the selected value on the slider.
+
+Between the these two options, you should be able to improve the contrast and brightness of your scanned image.
+
 # Development Environment
 This program was developed on an Intel 2016 MacBook Pro using Java 8 and NetBeans 8.2.
 
