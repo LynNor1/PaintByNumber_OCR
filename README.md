@@ -95,7 +95,7 @@ To move to the previous or next column, press the `<` or `>` button.  After you 
 
 For row clues, you use the identical process as for column clues.  You identify the number of rows to process and the maximum number of clues per row. Then select the `Lock selection` checkbox.  If everything looks good, click on the `OCR Process...` button.  A window like the following appears:
 
-![process row clues](readme_images/Process_row_clues_example.png)
+![process row clues](readme_images/Process_Row_clues_example.png)
 
 This dialog behaves in similar fashion as the `Process Columns` dialog.  Of notable difference, the selected image can be processed as one image or it can be broken up into one image per clue.
 
