@@ -49,15 +49,75 @@ If at any time you feel you've messed something up, you can reload the image by 
 
 If the image does not have enough contrast and is not bright enough (meaning the background is not white enough and the digits are not dark enough), the OCR process will have a more difficult time recognizing the clues.
 
-When you choose the `Contrast+` button, the code brightens all pixels whose values lay to the right of the selected value on the greyscale slider (0-256) and darkens those values that lay to the left.
+When you choose the `Contrast+` button, the code brightens all pixels whose values are higher than the value on the greyscale slider (0-256) and darkens those values that are lower.
 
-When you choose the `Brighten` button, the code brightens all pixels whose values lay to the right of the selected value on the slider.
+When you choose the `Brighten` button, the code brightens all pixels whose are higher than the selected value on the slider.
 
 Between the these two options, you should be able to improve the contrast and brightness of your scanned image.
 
 ### Save the modified image
 
 Hit the `Save image` button if you want to save the modified image into a new file.
+
+## Extracting the Clues
+
+### Selecting the Clues and Working with Large Puzzles
+
+When you're ready to start extracting the clues, left-click-and-drag a rectangle around the bounding box of the clues.  You process the column clues separately from the row clues and are not required to do both in one session.  You will tell the program which ones you're selecting by choosing `Column Clues` or `Row Clues` from the drop down menu.
+
+![column clues selected](readme_images/ColumnCluesSelected.png)
+
+Note: For those really large puzzles, you sometimes need to scan portions of the clues and process them in sections.  Because the PaintByNumberPro file format (.pbn) is actually a text file, it is easy to save your clues into separate files and combine them later.  This OCR program will let you start your clues from any column or row that you specify.  For example, if you scanned clues for rows 0-89 separately from rows 90-179, then you can save the 2nd set of clues starting at row 90.  (Row or column numbers are included in the .pbn files).
+
+On the right side of the window in the middle section, select `Column Clues` or `Row Clues` from the drop-down menu.  Then tell the program how many columns or rows to process and the maximum number of clues in each column or row.  Then press the `Lock selection` checkbox.  If the numbers are right, then it will look something like this:
+
+![ready for OCR processing](readme_images/ReadyForOCRProcessing.png)
+
+Each clue should be neatly in its own box.  If you've got either of the numbers wrong, just uncheck the `Lock selection` checkbox, update the numbers, and lock it again.
+
+### Processing Column Clues
+
+Once you're ready, click on the `OCR Process...` button.  A window like the following appears:
+
+![process column clues](readme_images/Process_column_clues_example.png)
+
+For each column, the image of the column clues is extracted from the photo.  White lines are drawn at the top, bottom, left, right, and between each clue.  This should isolate the digits from the background and make it easier for the OCR function to recognize the numbers.  You can move those white lines around and make them thicker or thinner using the top 4 rows of controls.
+
+Additionally, you can "nudge" the extraction box location within the photo in any direction.  This helps when there are distortions in the photo or scan of the puzzle and the locked rectangular grid does not match the clue locations.
+
+If this is the first time the program has encountered these clues, it will run the OCR function on the image (shown on the left) and display what it read to the right.  Make any corrections needed.  For particularly long lists of clues, it is sometimes helpful to hear the clues being read to you.  Press the `Read` button to turn this on.  If you are annoyed by the sound of my voice, you can record and replace the audio files in the `src/audio` folder.  These files must have the same names and format as the originals.
+
+If you want to run the OCR function again (say, after you nudged the extraction box or moved some of the white lines around), press the `OCR` button.
+
+To move to the previous or next column, press the `<` or `>` button.  After you have processed all of the columns, the `Review Cols...` button should become enabled.  You can use this button to return to reviewing the column clues.  It also can be used to bring the `Process Columns` window to the front.
+
+### Processing Row Clues
+
+For row clues, you use the identical process as for column clues.  You identify the number of rows to process and the maximum number of clues per row. Then select the `Lock selection` checkbox.  If everything looks good, click on the `OCR Process...` button.  A window like the following appears:
+
+![process row clues](readme_images/Process_row_clues_example.png)
+
+This dialog behaves in similar fashion as the `Process Columns` dialog.  Of notable difference, the selected image can be processed as one image or it can be broken up into one image per clue.
+
+If you choose to process the line as a whole (see the checkbox), then each digit encountered will be separated by a space.  This means that `15` will appear as `1` and `5` and you must remove the space in between.  This processing method is faster.
+
+If you choose to process each clue separately, numbers such as `15` will hopefully be recognized as `15`.  However, this process is slower.
+
+Sometimes one approach works better than the other.  You can try either one.  Click on the `OCR` button to rerun the OCR processing for that row.
+
+After you have navigated through all of the rows, the `Review Rows...` button should become enabled.
+
+### Saving the Clues
+
+## Checking a .pbn File
+
+It often happens that the .pbn file created by this program still contains small typos.  When this occurs, you can choose to compare a scanned puzzle with an existing .pbn file.
+
+To do this, first select your column or row clues as usual and lock the selection.  Then click on the `Compare w/PBN...` button.  Select the .pbn file to load.  The following dialog will appear:
+
+XXX
+
+After you have found your errors and made the appropriate corrections, click on the `Save PBN...` button to write out a new .pbn file.  This will write out the full .pbn file rather than just the clues that have been processed.
 
 # Development Environment
 This program was developed on an Intel 2016 MacBook Pro using Java 8 and NetBeans 8.2.
