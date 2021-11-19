@@ -163,6 +163,12 @@ Once you have selected the starting column or row, click on the `OK` button and 
 
 After you have found your errors and made the appropriate corrections, click on the `Save PBN...` button to write out a new .pbn file.  This will write out the full .pbn file rather than just the clues that have been examined and corrected.
 
+# Dependencies
+
+This program uses code from the PaintByNumberPro project to read and write the .pbn files.  Thus, one of its libraries is the PaintByNumberPro.jar file.  Please see my other repository for that program.
+
+The other dependencies are for Tesseract OCR and for OpenCV.  These are described in more detail in the next section.
+
 # Development Environment
 This program was developed on an Intel 2016 MacBook Pro using Java 8 and NetBeans 8.2.
 
