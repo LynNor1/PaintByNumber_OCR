@@ -109,15 +109,59 @@ After you have navigated through all of the rows, the `Review Rows...` button sh
 
 ### Saving the Clues
 
+To save the clues to a .pbn file, readable by the PaintByNumberPro program, click on the `Save Clues` button.  The following dialog appears:
+
+![Save Clues Dialog](readme_images/SaveCluesDialog.png)
+
+The `Source` text field is where you can list the source of the scanned puzzle.  For example, it could be the 1st puzzle from a book of nonograms you could call this "nonogram_book_puzzle_1".  The default value is the name of the scanned image that you've just processed.
+
+The total number of columns and rows are noted as is the sum of all the clue values for each set of clues.  If they're different, then there is an error and you need to double-check the clues against the scanned puzzle.
+
+The start column and row are provided as a convenience for when you are scanning and processing portions of a puzzle.  For example if you processed rows 90 to 179 only with no column clues, you can still save the row clues in its own file and combine it with the other clues later using any text editor.  You tell the program that you're starting with row 90 by setting the `Start row` text field to 90.  If you fail to do this, then you will have to manually edit all of the row numbers within the .pbn file.
+
+Click the `Save` button when you're ready to choose a .pbn file to write the clues to.
+
+## Format of a .pbn File
+
+The format of a .pbn file is simple.  It looks like this:
+```
+Source	Nonogram Book Puzzle 1
+Rows	25
+Cols	30
+Row_clues	0	1	27
+Row_clues	1	3	7	14	3
+Row_clues	2	5	6	1	1	11	3
+Row_clues	3	7	1	4	1	1	9	2	3
+...
+Row_clues	24	5	3	1	2	4	2
+Col_clues	0	1	1
+Col_clues	1	4	13	1	1	3
+Col_clues	2	4	18	1	1	1
+Col_clues	3	6	3	1	2	6	3	1
+Col_clues	4	4	4	1	2	4
+...
+Col_clues	29	2	18	6
+
+``` 
+(The ... indicates that there are lines not shown).  The first line contains the Source of the puzzle and is contains arbitrary text.  The second and third lines tell you how many rows and columns there are in the puzzle.  These are followed by the row clues and then the column clues.  The 1st digit after `Row_clues` or `Col_clues` is the row or column number.  It is followed by the number of clues for that row or column.  And lastly come the clue values.  Please keep these items in the order shown as the PaintByNumberPro program that reads the file is not particularly flexible.
+
 ## Checking a .pbn File
 
 It often happens that the .pbn file created by this program still contains small typos.  When this occurs, you can choose to compare a scanned puzzle with an existing .pbn file.
 
-To do this, first select your column or row clues as usual and lock the selection.  Then click on the `Compare w/PBN...` button.  Select the .pbn file to load.  The following dialog will appear:
+To do this, first select your column or row clues as usual and lock the selection.  Then click on the `Compare w/PBN...` button.  Select the .pbn file to load.  Then the following dialog will appear:
 
-XXX
+![Grab clues from .pbn file](readme_images/GrabCluesFromPBN.png)
 
-After you have found your errors and made the appropriate corrections, click on the `Save PBN...` button to write out a new .pbn file.  This will write out the full .pbn file rather than just the clues that have been processed.
+The example shown is for locked column clues.  The dialog is similar for locked row clues.
+
+The .pbn file is read in and the number of columns and rows are reported as are the sum of the clue values for the clues in each direction.  If these numbers do not match, then there is an error with the clues.
+
+In the text field, you can tell the program which column or row of clues you want to start with to compare with the selected clues in the scanned image.
+
+Once you have selected the starting column or row, click on the `OK` button and the usual dialog for comparing and/or processing the scanned clues will appear.  You can cycle through the clues looking for any errors and correcting them.
+
+After you have found your errors and made the appropriate corrections, click on the `Save PBN...` button to write out a new .pbn file.  This will write out the full .pbn file rather than just the clues that have been examined and corrected.
 
 # Development Environment
 This program was developed on an Intel 2016 MacBook Pro using Java 8 and NetBeans 8.2.
