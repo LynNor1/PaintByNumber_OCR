@@ -1,5 +1,9 @@
 # PaintByNumber_OCR
-Java program to scan a Nonogram .tiff (or other image format) and assist the user in extracting the puzzle clues using OCR and writing those clues into a text file format compatible with PaintByNumberPro.
+Java program to scan a Nonogram .tiff (or other image format) and assist the user in extracting the puzzle clues using OCR and writing those clues into a text file format compatible with **PaintByNumberPro**.
+
+Nonograms are also called Paint By Number, Griddlers, Hanjie, PicCross or Pic-a-Pix puzzles.
+
+#paintbynumber #griddler #hanjie #piccross #picapix #interactive #autosolver
 
 # Instructions for Use
 
@@ -7,7 +11,7 @@ Java program to scan a Nonogram .tiff (or other image format) and assist the use
 
 When you first run the program, you will be immediately asked to select an image to load.  You will have an easier time with the OCR processing if you use a flatbed scanner for your puzzle (or a screen capture).  You can take a photo of the puzzle, but the paper needs to be as flat as possible for good results.  And the lens distortion should be minimal.
 
-Note that you do not need to scan in an entire puzzle all at once.  You can scan in portions of the clues and write out portions of the clues, combining them later into a single file to be used with PaintByNumberPro.
+Note that you do not need to scan in an entire puzzle all at once.  You can scan in portions of the clues and write out portions of the clues, combining them later into a single file to be used with **PaintByNumberPro**.
 
 As a note, I've been scanning the puzzles in black and white at 200 dpi.  You can use photos, but you may need to scale them to a smaller size if they're too big to work with easily.  This can be done in this OCR program.
 
@@ -67,7 +71,7 @@ When you're ready to start extracting the clues, left-click-and-drag a rectangle
 
 ![column clues selected](readme_images/ColumnCluesSelected.png)
 
-Note: For those really large puzzles, you sometimes need to scan portions of the clues and process them in sections.  Because the PaintByNumberPro file format (.pbn) is actually a text file, it is easy to save your clues into separate files and combine them later.  This OCR program will let you start your clues from any column or row that you specify.  For example, if you scanned clues for rows 0-89 separately from rows 90-179, then you can save the 2nd set of clues starting at row 90.  (Row or column numbers are included in the .pbn files).
+Note: For those really large puzzles, you sometimes need to scan portions of the clues and process them in sections.  Because the **PaintByNumberPro** file format (.pbn) is actually a text file, it is easy to save your clues into separate files and combine them later.  This OCR program will let you start your clues from any column or row that you specify.  For example, if you scanned clues for rows 0-89 separately from rows 90-179, then you can save the 2nd set of clues starting at row 90.  (Row or column numbers are included in the .pbn files).
 
 On the right side of the window in the middle section, select `Column Clues` or `Row Clues` from the drop-down menu.  Then tell the program how many columns or rows to process and the maximum number of clues in each column or row.  Then press the `Lock selection` checkbox.  If the numbers are right, then it will look something like this:
 
@@ -109,7 +113,7 @@ After you have navigated through all of the rows, the `Review Rows...` button sh
 
 ### Saving the Clues
 
-To save the clues to a .pbn file, readable by the PaintByNumberPro program, click on the `Save Clues` button.  The following dialog appears:
+To save the clues to a .pbn file, readable by the **PaintByNumberPro** program, click on the `Save Clues` button.  The following dialog appears:
 
 ![Save Clues Dialog](readme_images/SaveCluesDialog.png)
 
@@ -143,7 +147,7 @@ Col_clues	4	4	4	1	2	4
 Col_clues	29	2	18	6
 
 ``` 
-(The ... indicates that there are lines not shown).  The first line contains the Source of the puzzle and is contains arbitrary text.  The second and third lines tell you how many rows and columns there are in the puzzle.  These are followed by the row clues and then the column clues.  The 1st digit after `Row_clues` or `Col_clues` is the row or column number.  It is followed by the number of clues for that row or column.  And lastly come the clue values.  Please keep these items in the order shown as the PaintByNumberPro program that reads the file is not particularly flexible.
+(The ... indicates that there are lines not shown).  The first line contains the Source of the puzzle and is contains arbitrary text.  The second and third lines tell you how many rows and columns there are in the puzzle.  These are followed by the row clues and then the column clues.  The 1st digit after `Row_clues` or `Col_clues` is the row or column number.  It is followed by the number of clues for that row or column.  And lastly come the clue values.  Please keep these items in the order shown as the **PaintByNumberPro** program that reads the file is not particularly flexible.
 
 ## Checking a .pbn File
 
@@ -165,7 +169,7 @@ After you have found your errors and made the appropriate corrections, click on 
 
 # Dependencies
 
-This program uses code from the PaintByNumberPro project to read and write the .pbn files.  Thus, one of its libraries is the PaintByNumberPro.jar file.  Please see my other repository for that program.
+This program uses code from the **PaintByNumberPro** project to read and write the .pbn files.  Thus, one of its libraries is the `PaintByNumberPro.jar` file.  Please see my other repository for that program.
 
 The other dependencies are for Tesseract OCR and for OpenCV.  These are described in more detail in the next section.
 
@@ -200,7 +204,7 @@ The Tess4J folder is configured as a NetBeans project.  In NetBeans, you can loa
 
 On my Mac, Tess4J does not contain the appropriate native libraries.  But I was able to install tesseract using homebrew.  So I am able to use the Java interfaces from Tess4J with the tesseract native libraries in homebrew without having to set up the java.library.path on the JVM command line.  (I'm probably also using a conveniently compatible version of tesseract).  I was not able to run the JUnit tests on my Mac for some reason because it could not find the native libraries. I have not pursued fixing this problem because my code was working.
 
-Note that for this program, PaintByNumber_OCR, you can set the TessDataLocationDefault static String in `PaintByNumber_OCR.java` for your system.  The other option is to provide the tessdatapath property in the "Run" "VMOptions:" (e.g. `-Dtessdatapath=<your_local_path_to_tessdata>`).
+Note that for this program, **PaintByNumber_OCR**, you can set the TessDataLocationDefault static String in `PaintByNumber_OCR.java` for your system.  The other option is to provide the tessdatapath property in the "Run" "VMOptions:" (e.g. `-Dtessdatapath=<your_local_path_to_tessdata>`).
 
 ## Tesseract Example in Java / NetBeans
 Here is a quick example of how to use Tesseract OCR in Java.  You can create this sample program within the Tess4J Netbeans project and see if it will run.
