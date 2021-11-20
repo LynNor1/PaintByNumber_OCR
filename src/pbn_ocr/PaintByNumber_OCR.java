@@ -23,10 +23,11 @@ import org.opencv.core.Core;
 public class PaintByNumber_OCR {
 
 	
-    static BufferedImage img = null;
-	static String name = "unknown";
-	static String TessDataLocationDefault = "/usr/local/Cellar/tesseract/4.1.1/share/tessdata";
-	static String TessDataPath;
+    private static BufferedImage img = null;
+	private static String name = "unknown";
+	private static String TessDataLocationDefault = "/usr/local/Cellar/tesseract/4.1.1/share/tessdata";
+	public static String TessDataPath;
+	public static Puzzle_JFrame frame;
 /**
  * @param args the command line arguments
  */
@@ -74,8 +75,9 @@ public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable()
 		{
 			public void run(){
-				Puzzle_JFrame frame = new Puzzle_JFrame(img, name, f);
-				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				frame = new Puzzle_JFrame(img, name, f);
+				frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+				WindowUtilities.CenterFrame (frame);
 				frame.setVisible(true);
 			}
 		}
@@ -98,7 +100,12 @@ public static void main(String[] args) {
 //        }
         
         return formats;
-    }        
+    }  
+   
+   public static Puzzle_JFrame GetPuzzle_JFrame() 
+   {
+	   return frame;
+   }
 
 }
 

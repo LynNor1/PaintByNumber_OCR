@@ -319,6 +319,7 @@ private void ProcessSelection (ArrayList<String> pbnClues)
 		{
 			processcol_JFrame = new ProcessCol_JFrame (this, "Process Columns", startPt, endPt, pbnClues);
 			processcol_JFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+			WindowUtilities.CenterFrame (processcol_JFrame);
 		}
 		processcol_JFrame.setVisible(true);
 		if (!processcol_JFrame.HasClues() || pbnClues != null)
@@ -329,6 +330,7 @@ private void ProcessSelection (ArrayList<String> pbnClues)
 		{
 			processrow_JFrame = new ProcessRow_JFrame (this, "Process Rows", startPt, endPt, pbnClues);
 			processrow_JFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+			WindowUtilities.CenterFrame (processrow_JFrame);
 		}
 		processrow_JFrame.setVisible(true);
 		if (!processrow_JFrame.HasClues() || pbnClues != null)
@@ -764,6 +766,7 @@ private void ProcessSelection (ArrayList<String> pbnClues)
 		
 		SaveClues_JFrame save_JFrame = new SaveClues_JFrame (myColClues, myRowClues, getTitle());
 		save_JFrame.setDefaultCloseOperation (JFrame.DO_NOTHING_ON_CLOSE);
+		WindowUtilities.CenterFrame(save_JFrame);
 		save_JFrame.setVisible(true);
     }//GEN-LAST:event_saveJButtonActionPerformed
 
@@ -1000,6 +1003,7 @@ private void ProcessSelection (ArrayList<String> pbnClues)
 			// okay, now we need to get the clues to extract for comparison with the image
 			myGrabCluesFromPBNJFrame = new GrabCluesFromPBNJFrame (this, myPuzzle, this.IsColSelected(),
 				this.getNumColsOrRows());
+			WindowUtilities.CenterFrame (myGrabCluesFromPBNJFrame);
 			myGrabCluesFromPBNJFrame.setVisible(true);
 			
 			// now... we wait form the grabclues JFrame to send us the info we need
