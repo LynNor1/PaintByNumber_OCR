@@ -7,6 +7,9 @@ Nonograms are also called Paint By Number, Griddlers, Hanjie, PicCross or Pic-a-
 
 # Instructions for Use
 
+## Getting Started
+The `PaintByNumber_OCR.java` class file contains the main function to run.  You can either run this program through your IDE or your can double-click on the `PaintByNumber_OCR.jar` file in your `dist` folder.
+
 ## Importing the puzzle image
 
 When you first run the program, you will be immediately asked to select an image to load.  You will have an easier time with the OCR processing if you use a flatbed scanner for your puzzle (or a screen capture).  You can take a photo of the puzzle, but the paper needs to be as flat as possible for good results.  And the lens distortion should be minimal.
